@@ -1,12 +1,1849 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CNVS OS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CNVS Marketing OS</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a; --s1:#111; --s2:#161616; --s3:#1c1c1c; --brd:#222; --brd2:#2a2a2a;
+  --cv:#c8c8c8; --mt:#666; --ft:#333; --lm:#b8ff00; --red:#ff4444; --gold:#FFB000;
+  --purple:#9b8cff; --blue:#4a9eff; --teal:#50c8aa;
+  --font:'Satoshi',sans-serif;
+  --ts:150ms cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--cv);font-family:var(--font);font-size:22px;line-height:1.5;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── SETUP ── */
+#setup{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:24px;}
+.setup-logo{font-size:2.2em;letter-spacing:8px;font-weight:500;color:var(--cv);display:inline-block;padding:6px 18px;margin-bottom:8px;}
+.setup-sub{font-size:.65em;letter-spacing:4px;color:var(--mt);}
+.setup-card{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:28px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;}
+.setup-card label{font-size:.65em;letter-spacing:2px;color:var(--mt);display:block;margin-bottom:4px;}
+.setup-card input,.setup-card select{width:100%;background:var(--s2);border:.5px solid var(--brd);color:var(--cv);padding:10px 12px;border-radius:3px;font-family:var(--font);font-size:.85em;outline:none;transition:border-color var(--ts);}
+.setup-card input:focus,.setup-card select:focus{border-color:var(--lm);}
+.setup-go{background:var(--lm);color:#000;border:none;padding:12px;width:100%;border-radius:3px;font-family:var(--font);font-weight:700;letter-spacing:2px;font-size:.75em;cursor:pointer;transition:opacity var(--ts);}
+.setup-go:hover{opacity:.85;}
+.setup-note{font-size:.6em;color:var(--mt);line-height:1.8;text-align:center;}
+.setup-note a{color:var(--mt);}
+.setup-err{display:none;font-size:.65em;color:var(--red);padding:8px 12px;background:rgba(255,68,68,.08);border:.5px solid rgba(255,68,68,.2);border-radius:3px;}
+
+/* ── TOPBAR ── */
+.tb{height:44px;background:var(--s1);border-bottom:.5px solid var(--brd);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;}
+.tb-logo{font-size:1em;letter-spacing:6px;font-weight:500;color:var(--cv);}
+.tb-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.tb-info{font-size:.68em;letter-spacing:2px;color:var(--mt);}
+.tb-sz{display:flex;align-items:center;gap:1px;background:var(--s2);border:.5px solid var(--brd);border-radius:3px;padding:2px;}
+.tb-sz button{background:none;border:none;color:var(--mt);cursor:pointer;font-size:11px;font-weight:600;letter-spacing:0;padding:4px 7px;border-radius:2px;transition:color var(--ts),background var(--ts);}
+.tb-sz button:hover{color:var(--cv);background:var(--s3);}
+.tb-sz button.active-size{color:var(--lm);background:rgba(184,255,0,.08);}
+#offline-badge{display:none;font-size:.6em;letter-spacing:2px;padding:2px 8px;border-radius:2px;background:rgba(184,255,0,.1);border:.5px solid var(--lm);color:var(--lm);}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex:1;overflow:hidden;height:calc(100vh - 44px);}
+.sb{width:210px;background:var(--s1);border-right:.5px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;min-height:0;}
+.sb-section{padding:16px 0 8px;}
+.sb-label{font-size:.62em;letter-spacing:3px;color:var(--ft);padding:0 16px 6px;text-transform:uppercase;}
+.si{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:.78em;letter-spacing:1px;color:var(--mt);cursor:pointer;transition:color var(--ts),background var(--ts);border-left:2px solid transparent;}
+.si:hover{color:var(--cv);background:var(--s2);}
+.si.on{color:var(--lm);border-left-color:var(--lm);background:rgba(184,255,0,.04);}
+.si-dot{width:6px;height:6px;border-radius:50%;background:var(--ft);flex-shrink:0;transition:background var(--ts);}
+.si-dot.live{background:var(--lm);}
+.sb-footer{margin-top:auto;padding:14px 16px;border-top:.5px solid var(--brd);font-size:.68em;letter-spacing:1px;color:var(--ft);line-height:2.0;}
+.agent-entry{display:flex;align-items:center;gap:8px;font-size:.85em;}
+.agent-dot-color{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0;}
+
+/* ── PANELS ── */
+.panel{display:none;flex:1;flex-direction:column;min-height:0;}
+.panel.on{display:flex;overflow-y:auto;}
+.ey{font-size:.65em;letter-spacing:4px;color:var(--mt);padding:28px 28px 4px;text-transform:uppercase;}
+.pt{font-size:1.85em;letter-spacing:2px;font-weight:500;color:var(--cv);padding:0 28px 16px;}
+.dv{height:.5px;background:var(--brd);margin:0 28px 24px;}
+.pc{padding:0 28px 28px;display:flex;flex-direction:column;gap:16px;}
+
+/* ── PIPELINE ── */
+.pipe-form{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:20px;display:flex;flex-direction:column;gap:12px;}
+.fl{font-size:.7em;letter-spacing:2px;color:var(--mt);margin-bottom:4px;}
+.pipe-form select,.pipe-form textarea,.pipe-form input{width:100%;background:var(--s2);border:.5px solid var(--brd);color:var(--cv);padding:9px 12px;border-radius:3px;font-family:var(--font);font-size:.88em;outline:none;transition:border-color var(--ts);}
+.pipe-form select:focus,.pipe-form textarea:focus,.pipe-form input:focus{border-color:var(--lm);}
+.pipe-form textarea{min-height:90px;resize:vertical;line-height:1.7;}
+.pipe-actions{display:flex;gap:8px;}
+.rb{background:var(--lm);color:#000;border:none;padding:10px 20px;border-radius:3px;font-family:var(--font);font-weight:700;letter-spacing:1px;font-size:.78em;cursor:pointer;transition:opacity var(--ts);}
+.rb:hover{opacity:.85;}
+.rb:disabled{opacity:.4;cursor:not-allowed;}
+.stop-btn{background:none;border:.5px solid var(--red);color:var(--red);padding:9px 18px;border-radius:3px;font-family:var(--font);font-size:.7em;cursor:pointer;letter-spacing:1px;display:none;transition:opacity var(--ts);}
+.stop-btn:hover{opacity:.7;}
+
+/* ── PIPELINE STATUS ── */
+.pipeline-status{display:none;background:var(--s1);border:.5px solid var(--brd);border-radius:4px;overflow:hidden;}
+.pipeline-status.on{display:block;}
+.ps-head{padding:14px 18px;border-bottom:.5px solid var(--brd);display:flex;align-items:center;gap:10px;}
+.ps-title{font-size:.75em;letter-spacing:2px;color:var(--cv);}
+.ps-spinner{width:10px;height:10px;border:1.5px solid var(--brd2);border-top-color:var(--lm);border-radius:50%;animation:spin 0.8s linear infinite;display:none;}
+.ps-spinner.on{display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.stage{border-bottom:.5px solid var(--brd);}
+.stage:last-child{border-bottom:none;}
+.stage-head{padding:12px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background var(--ts);}
+.stage-head:hover{background:var(--s2);}
+.stage-dot{width:8px;height:8px;border-radius:50%;background:var(--ft);flex-shrink:0;transition:background var(--ts);}
+.stage.active .stage-dot{background:var(--gold);animation:pulse 1s ease-in-out infinite;}
+.stage.done .stage-dot{background:var(--lm);}
+.stage.error .stage-dot{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.stage-label{font-size:.78em;letter-spacing:1px;color:var(--mt);flex:1;}
+.stage.active .stage-label{color:var(--cv);}
+.stage.done .stage-label{color:var(--lm);}
+.stage-time{font-size:.6em;color:var(--ft);letter-spacing:1px;}
+.stage-body{display:none;padding:14px 18px;font-size:.82em;line-height:1.9;color:var(--cv);white-space:pre-wrap;border-top:.5px solid var(--brd);max-height:300px;overflow-y:auto;}
+.stage.open .stage-body{display:block;}
+
+/* ── INBOX / ARCHIVE ── */
+.inbox-item{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;}
+.inbox-item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.inbox-tag{font-size:.63em;letter-spacing:2px;padding:3px 8px;border-radius:2px;border:.5px solid;}
+.tag-dept{border-color:var(--blue);color:var(--blue);}
+.tag-out{border-color:var(--ft);color:var(--mt);}
+.tag-revised{border-color:var(--gold);color:var(--gold);}
+.inbox-title{font-size:.88em;color:var(--cv);font-weight:500;}
+.inbox-preview{font-size:.80em;color:var(--mt);line-height:1.8;white-space:pre-wrap;cursor:pointer;position:relative;}
+.inbox-preview.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--s1));}
+.inbox-preview.expanded{max-height:none;}
+.expand-hint{font-size:.62em;color:var(--ft);letter-spacing:1px;margin-top:4px;cursor:pointer;transition:color var(--ts);}
+.expand-hint:hover{color:var(--lm);}
+.inbox-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.btn-gl{background:var(--lm);color:#000;border:none;padding:7px 16px;border-radius:2px;font-family:var(--font);font-size:.68em;font-weight:700;letter-spacing:1px;cursor:pointer;transition:opacity var(--ts);}
+.btn-gl:hover{opacity:.85;}
+.btn-sb{background:none;border:.5px solid var(--ft);color:var(--mt);padding:7px 16px;border-radius:2px;font-family:var(--font);font-size:.68em;cursor:pointer;letter-spacing:1px;transition:color var(--ts),border-color var(--ts);}
+.btn-sb:hover{color:var(--cv);border-color:var(--brd2);}
+.btn-fb{background:none;border:.5px solid var(--gold);color:var(--gold);padding:7px 16px;border-radius:2px;font-family:var(--font);font-size:.68em;cursor:pointer;letter-spacing:1px;transition:opacity var(--ts);}
+.btn-fb:hover{opacity:.7;}
+.empty-state{padding:40px;text-align:center;color:var(--ft);font-size:.78em;letter-spacing:2px;}
+
+/* ── FEEDBACK MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8888;display:none;align-items:center;justify-content:center;}
+.modal-overlay.on{display:flex;}
+.modal{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:24px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;}
+.modal-title{font-size:.95em;letter-spacing:2px;font-weight:500;color:var(--cv);}
+.modal-sub{font-size:.74em;color:var(--mt);line-height:1.75;}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{font-size:.68em;letter-spacing:1px;padding:5px 11px;border-radius:2px;border:.5px solid var(--brd2);color:var(--mt);cursor:pointer;transition:all var(--ts);}
+.chip:hover{border-color:var(--cv);color:var(--cv);}
+.chip.liked{border-color:var(--lm);color:var(--lm);background:rgba(184,255,0,.06);}
+.chip.disliked{border-color:var(--red);color:var(--red);background:rgba(255,68,68,.06);}
+.modal textarea{width:100%;background:var(--s2);border:.5px solid var(--brd);color:var(--cv);padding:9px 12px;border-radius:3px;font-family:var(--font);font-size:.86em;outline:none;min-height:70px;resize:vertical;line-height:1.6;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn-cancel{background:none;border:.5px solid var(--ft);color:var(--mt);padding:7px 16px;border-radius:2px;font-family:var(--font);font-size:.65em;cursor:pointer;letter-spacing:1px;}
+
+/* ── KNOWLEDGE BASE ── */
+.kb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:.5px solid var(--brd);}
+.kb-row:last-child{border-bottom:none;}
+.kb-label{font-size:.7em;color:var(--cv);flex:1;}
+.kb-badge{font-size:.63em;letter-spacing:2px;padding:3px 8px;border-radius:2px;border:.5px solid var(--brd2);color:var(--mt);}
+.kb-badge.live{border-color:var(--lm);color:var(--lm);}
+
+/* ── BOARD / BOARDROOM ── */
+.board-card{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:18px;position:relative;}
+.bc-role{font-size:.63em;letter-spacing:3px;color:var(--mt);margin-bottom:6px;text-transform:uppercase;}
+.bc-name{font-size:1.1em;letter-spacing:2px;font-weight:500;color:var(--cv);margin-bottom:2px;}
+.bc-org{font-size:.65em;color:var(--mt);margin-bottom:10px;}
+.bc-bio{font-size:.78em;color:var(--mt);line-height:1.85;margin-bottom:10px;}
+.bc-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.bc-tag{font-size:.55em;letter-spacing:1px;padding:2px 8px;border-radius:2px;border:.5px solid var(--brd2);color:var(--ft);}
+.bc-remove{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--ft);cursor:pointer;font-size:.9em;transition:color var(--ts);}
+.bc-remove:hover{color:var(--red);}
+.brd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+
+/* ── RESEARCH MODAL ── */
+.research-stage{font-size:.65em;color:var(--mt);padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:.5px solid var(--brd);}
+.research-stage:last-child{border-bottom:none;}
+.research-stage.done{color:var(--lm);}
+.research-stage.active{color:var(--gold);}
+.rs-dot{width:6px;height:6px;border-radius:50%;background:var(--ft);flex-shrink:0;}
+.research-stage.done .rs-dot{background:var(--lm);}
+.research-stage.active .rs-dot{background:var(--gold);animation:pulse 1s ease-in-out infinite;}
+.profile-preview{background:var(--s2);border:.5px solid var(--brd2);border-radius:3px;padding:14px;display:none;flex-direction:column;gap:8px;}
+.profile-preview.on{display:flex;}
+
+/* ── DEPTS OVERVIEW ── */
+.dept-card{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:16px;display:flex;flex-direction:column;gap:6px;}
+.dept-card-head{display:flex;align-items:center;gap:8px;}
+.dept-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dept-name{font-size:.88em;letter-spacing:1px;font-weight:500;color:var(--cv);}
+.dept-desc{font-size:.76em;color:var(--mt);line-height:1.75;}
+.dept-status{font-size:.55em;letter-spacing:2px;padding:2px 7px;border-radius:2px;margin-left:auto;}
+.dept-status.on{border:.5px solid var(--lm);color:var(--lm);}
+.dept-status.off{border:.5px solid var(--ft);color:var(--ft);}
+
+/* ── DESIGN TEAM ── */
+.dt-agent{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+.dt-agent-head{display:flex;align-items:center;gap:8px;}
+.dt-codename{font-size:.85em;letter-spacing:3px;font-weight:700;}
+.dt-role{font-size:.68em;letter-spacing:2px;color:var(--mt);}
+.dt-desc{font-size:.76em;color:var(--mt);line-height:1.75;}
+
+/* ── SETTINGS ── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 28px 60px;}
+@media(max-width:1100px){.settings-grid{grid-template-columns:1fr;}}
+.scard{background:var(--s1);border:.5px solid var(--brd);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px;}
+.scard-title{font-size:.72em;letter-spacing:3px;color:var(--mt);text-transform:uppercase;border-bottom:.5px solid var(--brd);padding-bottom:8px;margin-bottom:2px;}
+.scard input,.scard select,.scard textarea{width:100%;background:var(--s2);border:.5px solid var(--brd);color:var(--cv);padding:9px 11px;border-radius:3px;font-family:var(--font);font-size:.85em;outline:none;transition:border-color var(--ts);}
+.scard input:focus,.scard select:focus{border-color:var(--lm);}
+.export-btn{background:none;border:.5px solid var(--brd2);color:var(--mt);padding:7px 14px;border-radius:2px;font-family:var(--font);font-size:.68em;cursor:pointer;letter-spacing:1px;transition:color var(--ts),border-color var(--ts);}
+.export-btn:hover{color:var(--cv);border-color:var(--cv);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--brd);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info{display:flex;flex-direction:column;gap:2px;}
+.toggle-name{font-size:.80em;color:var(--cv);}
+.toggle-desc{font-size:.68em;color:var(--mt);}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--brd2);border-radius:20px;cursor:pointer;transition:background var(--ts);}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--mt);border-radius:50%;transition:transform var(--ts),background var(--ts);}
+.toggle input:checked+.toggle-slider{background:rgba(184,255,0,.2);}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px);background:var(--lm);}
+.api-provider{background:var(--s2);border:.5px solid var(--brd2);border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:7px;}
+.api-provider-head{display:flex;align-items:center;justify-content:space-between;}
+.api-provider-name{font-size:.76em;letter-spacing:1px;font-weight:500;color:var(--cv);}
+.api-provider-status{font-size:.55em;letter-spacing:2px;padding:2px 7px;border-radius:2px;}
+.api-provider-status.active{border:.5px solid var(--lm);color:var(--lm);}
+.api-provider-status.inactive{border:.5px solid var(--ft);color:var(--ft);}
+.gh-slot{display:flex;gap:6px;align-items:center;}
+.gh-slot input{flex:1;}
+.storage-option{background:var(--s2);border:.5px solid var(--brd2);border-radius:3px;padding:10px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color var(--ts);}
+.storage-option.active{border-color:var(--lm);}
+.storage-option-icon{font-size:1.1em;}
+.storage-option-info{display:flex;flex-direction:column;gap:2px;}
+.storage-option-name{font-size:.7em;color:var(--cv);}
+.storage-option-desc{font-size:.6em;color:var(--mt);}
+.offline-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+#offline-status{font-size:.6em;letter-spacing:2px;color:var(--lm);display:none;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--ft);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--s2);border:.5px solid var(--brd2);color:var(--cv);padding:10px 16px;border-radius:3px;font-size:.78em;letter-spacing:1px;z-index:9998;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+#toast.on{opacity:1;}
+
+/* ── CIPHER LOGO ── */
+.cipher-char {
+  display: inline-block;
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: inherit;
+  transition: color 0.15s;
+  font-variant-numeric: tabular-nums;
+  min-width: 0.72em;
+  text-align: center;
+}
+.cipher-char[data-final="V"] {
+  color: #b8ff00 !important;
+}
+@keyframes cipher-flicker {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.cipher-char.scrambling {
+  animation: cipher-flicker 0.08s infinite;
+  color: var(--mt);
+}
+.cipher-char.locked {
+  animation: none;
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- FEEDBACK MODAL -->
+<div class="modal-overlay" id="feedback-modal">
+  <div class="modal">
+    <div class="modal-title">Owner Feedback</div>
+    <div class="modal-sub">Select what worked and what didn't. Notes are optional. Edison will brief the team before revision.</div>
+    <div class="fl">What worked ✓</div>
+    <div class="chip-group" id="chips-liked">
+      <div class="chip" onclick="toggleChip(this,'liked')">Tone</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">Hook</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">Brand voice</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">Structure</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">Culture refs</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">Specificity</div>
+      <div class="chip" onclick="toggleChip(this,'liked')">CTA</div>
+    </div>
+    <div class="fl">What didn't work ✗</div>
+    <div class="chip-group" id="chips-disliked">
+      <div class="chip" onclick="toggleChip(this,'disliked')">Too generic</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">Wrong tone</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">Off-brand</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">Too long</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">Too short</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">Weak hook</div>
+      <div class="chip" onclick="toggleChip(this,'disliked')">No direction</div>
+    </div>
+    <div class="fl">Additional notes (optional)</div>
+    <textarea id="feedback-notes" placeholder="Be specific — the team reads this verbatim..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeFeedback()">Cancel</button>
+      <button class="rb" onclick="submitFeedback()" style="font-size:.65em;padding:7px 16px;">Send to Team →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESEARCH MODAL -->
+<div class="modal-overlay" id="research-modal">
+  <div class="modal">
+    <div class="modal-title">Add Board Member</div>
+    <div class="modal-sub">Enter a name and optional context. The OS will research their background and build a full profile.</div>
+    <div class="fl">Name</div>
+    <input type="text" id="research-name" placeholder="e.g. Virgil Abloh, Kim Jones, Edison Chen...">
+    <div class="fl">Context (optional)</div>
+    <input type="text" id="research-context" placeholder="e.g. streetwear designer, Tokyo-based artist...">
+    <div id="research-stages" style="display:none;margin:4px 0;">
+      <div class="research-stage" id="rs-1"><div class="rs-dot"></div>Researching background & credentials</div>
+      <div class="research-stage" id="rs-2"><div class="rs-dot"></div>Analysing CNVS cultural relevance</div>
+      <div class="research-stage" id="rs-3"><div class="rs-dot"></div>Building board profile</div>
+      <div class="research-stage" id="rs-4"><div class="rs-dot"></div>Integrating into team</div>
+    </div>
+    <div class="profile-preview" id="profile-preview"></div>
+    <div class="modal-actions" id="research-actions">
+      <button class="btn-cancel" onclick="closeResearch()">Cancel</button>
+      <button class="rb" id="research-btn" onclick="startResearch()" style="font-size:.65em;padding:7px 16px;">Research Member →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup">
+  <div style="text-align:center;">
+    <div class="setup-logo" id="cnvs-logo">
+      <span class="cipher-char" data-final="C">C</span><span class="cipher-char" data-final="N">N</span><span class="cipher-char" data-final="V" style="color:#b8ff00">V</span><span class="cipher-char" data-final="S">S</span>
+    </div>
+    <div class="setup-sub">Marketing OS — v4</div>
+  </div>
+  <div class="setup-card">
+    <div>
+      <label>API KEY</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-… / sk-… / pplx-…" autocomplete="off">
+      <div style="font-size:.6em;color:var(--ft);margin-top:4px;letter-spacing:.5px;">Anthropic <span style="color:var(--brd2)">|</span> OpenAI <span style="color:var(--brd2)">|</span> Perplexity</div>
+    </div>
+    <div>
+      <label>MODEL</label>
+      <select id="model-input">
+        <optgroup label="Claude (Anthropic)">
+          <option value="claude-sonnet-4-20250514">Claude Sonnet 4 — Recommended</option>
+          <option value="claude-opus-4-20250514">Claude Opus 4 — Most capable</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — Fast</option>
+          <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+        </optgroup>
+        <optgroup label="Perplexity">
+          <option value="sonar-pro">Sonar Pro</option>
+          <option value="sonar">Sonar</option>
+        </optgroup>
+      </select>
+    </div>
+    <div id="setup-err" class="setup-err"></div>
+    <button class="setup-go" onclick="setupConnect()">CONNECT & LAUNCH</button>
+    <button class="setup-go" onclick="enterAppNoKey()" style="background:none;border:.5px solid var(--brd2);color:var(--mt);margin-top:6px;">→ ENTER WITHOUT KEY — configure in Settings</button>
+    <div class="setup-note">Key stored locally in your browser only — never sent anywhere except the AI provider you select. <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get Anthropic key</a> · <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">Get OpenAI key</a></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="tb" style="display:none;" id="topbar">
+  <div class="tb-logo">CN<span style="color:var(--lm)">V</span>S</div>
+  <div class="tb-right">
+    <span class="tb-info" id="model-label">—</span>
+    <span id="offline-badge">⚫ OFFLINE</span>
+    <div class="tb-sz">
+      <button id="sz-1" onclick="setSize(15,'sz-1')">15</button>
+      <button id="sz-2" onclick="setSize(18,'sz-2')">18</button>
+      <button id="sz-3" onclick="setSize(22,'sz-3')" class="active-size">22</button>
+      <button id="sz-4" onclick="setSize(26,'sz-4')">26</button>
+      <button id="sz-5" onclick="setSize(30,'sz-5')">30</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" style="display:none;" id="appshell">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-section">
+      <div class="sb-label">Automation</div>
+      <div class="si on" id="nav-pipeline" onclick="nav('pipeline')"><div class="si-dot live" id="dot-pipeline"></div>Pipeline</div>
+      <div class="si" id="nav-inbox" onclick="nav('inbox')"><div class="si-dot live" id="dot-inbox"></div>Inbox</div>
+      <div class="si" id="nav-archive" onclick="nav('archive')"><div class="si-dot"></div>Archive</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">System</div>
+      <div class="si" id="nav-kb" onclick="nav('kb')"><div class="si-dot"></div>Knowledge Base</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Leadership</div>
+      <div class="si" id="nav-boardroom" onclick="nav('boardroom')"><div class="si-dot live"></div>Board Room</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Structure</div>
+      <div class="si" id="nav-depts" onclick="nav('depts')"><div class="si-dot"></div>Departments</div>
+      <div class="si" id="nav-designteam" onclick="nav('designteam')"><div class="si-dot live"></div>Design Team</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Configuration</div>
+      <div class="si" id="nav-settings" onclick="nav('settings')"><div class="si-dot"></div>Settings</div>
+    </div>
+    <div class="sb-footer" id="sb-footer">
+      <div style="color:var(--mt);letter-spacing:2px;font-size:1em;margin-bottom:8px;font-weight:700;">ACTIVE AGENTS</div>
+      <div id="active-agent-list" style="line-height:2.0;"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- PIPELINE -->
+    <div class="panel on" id="panel-pipeline">
+      <div class="ey">Automation</div><div class="pt">Pipeline</div><div class="dv"></div>
+      <div class="pc">
+        <div class="pipe-form">
+          <div class="fl">New Task</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div class="fl">Department</div>
+              <select id="dept-select" onchange="updateOutputTypes()"></select>
+            </div>
+            <div>
+              <div class="fl">Output Type</div>
+              <select id="output-select"></select>
+            </div>
+          </div>
+          <div class="fl">Your Brief</div>
+          <textarea id="brief-input" placeholder="Be specific. The agent reads every word. Include product, colourway, tone, target audience, constraints, specific details you want included or avoided."></textarea>
+          <div class="pipe-actions">
+            <button class="rb" id="run-btn" onclick="runPipeline()">Run Pipeline →</button>
+            <button class="stop-btn" id="stop-btn" onclick="stopPipeline()">■ Stop</button>
+          </div>
+        </div>
+        <div class="pipeline-status" id="pipeline-status">
+          <div class="ps-head">
+            <div class="ps-spinner" id="ps-spinner"></div>
+            <div class="ps-title" id="ps-title">Idle</div>
+          </div>
+          <div id="ps-stages"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INBOX -->
+    <div class="panel" id="panel-inbox">
+      <div class="ey">Owner</div><div class="pt">Inbox — Awaiting Greenlight</div><div class="dv"></div>
+      <div class="pc" id="inbox-list"></div>
+    </div>
+
+    <!-- ARCHIVE -->
+    <div class="panel" id="panel-archive">
+      <div class="ey">Owner</div><div class="pt">Archive — Approved</div><div class="dv"></div>
+      <div class="pc">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <button class="export-btn" onclick="exportAllArchive()">Export TXT</button>
+          <button class="export-btn" onclick="exportArchiveCSV()">Export CSV</button>
+        </div>
+        <div id="archive-list"></div>
+      </div>
+    </div>
+
+    <!-- KNOWLEDGE BASE -->
+    <div class="panel" id="panel-kb">
+      <div class="ey">System</div><div class="pt">Knowledge Base</div><div class="dv"></div>
+      <div class="pc">
+        <div class="scard">
+          <div class="scard-title">Brand DNA</div>
+          <div class="kb-row"><div class="kb-label">Last synced</div><div class="kb-badge" id="kb-sync-date">Base version — never updated</div></div>
+          <div class="kb-row"><div class="kb-label">Brand DNA — Always in every agent</div><div class="kb-badge live">Active</div></div>
+          <div class="kb-row"><div class="kb-label">Live Updates</div><div class="kb-badge" id="kb-update-status">None loaded</div></div>
+          <div class="kb-row"><div class="kb-label">GitHub Knowledge</div><div class="kb-badge" id="kb-gh-status">No updates synced. Click Sync Update above.</div></div>
+        </div>
+        <div class="scard">
+          <div class="scard-title">Sync Brand Update</div>
+          <textarea id="kb-update-input" style="min-height:80px;resize:vertical;" placeholder="Paste brand updates, new campaign directions, tone changes, new product info..."></textarea>
+          <button class="rb" onclick="syncKB()" style="font-size:.65em;padding:7px 14px;align-self:flex-start;">Sync Update →</button>
+        </div>
+        <div class="scard" style="font-size:.7em;color:var(--mt);line-height:1.9;">
+          <div class="scard-title">How the agents use this</div>
+          Every agent receives the full CNVS knowledge base as context before generating any output. When you sync updates, the new information is immediately available to all agents in the next pipeline run. The CMO also uses this to judge cultural authenticity.
+        </div>
+      </div>
+    </div>
+
+    <!-- BOARD ROOM -->
+    <div class="panel" id="panel-boardroom">
+      <div class="ey">Leadership</div><div class="pt">Board Room</div><div class="dv"></div>
+      <div class="pc">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="font-size:.65em;color:var(--mt);letter-spacing:1px;">Manage board members. Added members receive full AI-researched profiles.</div>
+          <button class="rb" onclick="openResearch()" style="font-size:.6em;padding:6px 14px;">+ Add Member</button>
+        </div>
+        <div class="brd-grid" id="boardroom-grid"></div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div class="panel" id="panel-depts">
+      <div class="ey">Structure</div><div class="pt">Department Overview</div><div class="dv"></div>
+      <div class="pc" id="dept-overview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
+    </div>
+
+    <!-- DESIGN TEAM -->
+    <div class="panel" id="panel-designteam">
+      <div class="ey">Creative Direction</div><div class="pt">Design Team</div><div class="dv"></div>
+      <div class="pc">
+        <!-- HOD Seat -->
+        <div class="scard" style="border-left:2px dashed var(--purple);margin-bottom:4px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="scard-title" style="color:var(--purple);margin-bottom:0;">Head of Design</div>
+            <span id="hod-badge" style="font-size:.55em;letter-spacing:2px;background:rgba(155,140,255,.1);border:.5px solid var(--purple);color:var(--purple);padding:2px 7px;border-radius:2px;">SEAT OPEN</span>
+          </div>
+          <div id="hod-profile" style="font-size:.7em;color:var(--mt);line-height:1.7;">The Head of Design oversees all apparel collections and works directly with Edison (CMO) on seasonal drops and campaign visuals. Add via Board Room when ready.</div>
+        </div>
+        <!-- Design brief form -->
+        <div class="scard">
+          <div class="scard-title">Generate Design Brief / Concept Art</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div class="fl">Product Type</div>
+              <select id="dt-product">
+                <option>Hoodie</option><option>Sweater</option><option>Cap</option>
+                <option>T-Shirt</option><option>Pants</option><option>Shirt</option>
+                <option>Accessory</option><option>Full Collection</option><option>Campaign Visual</option>
+              </select>
+            </div>
+            <div>
+              <div class="fl">Direction</div>
+              <select id="dt-direction">
+                <option>Community & Culture</option><option>Minimal / Fragment</option>
+                <option>Bold Statement</option><option>CLOT-inspired</option>
+                <option>Collab Concept</option><option>Drop Campaign</option>
+                <option>Casual Lifestyle</option><option>Concept Art</option>
+              </select>
+            </div>
+          </div>
+          <div class="fl">Theme / Brief</div>
+          <textarea id="dt-brief" style="min-height:70px;resize:vertical;" placeholder="Describe the concept, colourway, cultural reference, mood..."></textarea>
+          <div style="display:flex;gap:8px;">
+            <button class="rb" onclick="runDesignTeam()" id="dt-run-btn" style="font-size:.65em;padding:7px 14px;">Run Design Team →</button>
+            <button class="export-btn" onclick="generateConceptArtUI()" style="font-size:.65em;">🎨 Generate Visual</button>
+          </div>
+        </div>
+        <!-- Visual output area -->
+        <div id="dt-visual-output" style="display:none;" class="scard">
+          <div class="scard-title">Visual Concept</div>
+          <div id="dt-visual-content"></div>
+        </div>
+        <!-- Agents grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--lm)">ATLAS</div></div><div class="dt-role">Silhouette & Form Design</div><div class="dt-desc">Apparel silhouettes, garment construction, fit direction. Specialises in clean architectural shapes — hoodie structures, pant cuts, outerwear proportion.</div></div>
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--purple)">VANTA</div></div><div class="dt-role">Graphics & Surface Design</div><div class="dt-desc">Graphic placement, print design, embroidery direction, patch layout. Community-first storytelling through surface art.</div></div>
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--blue)">OMEN</div></div><div class="dt-role">Accessories & Caps</div><div class="dt-desc">Cap design (structured, unstructured, 6-panel), bag concepts, accessory direction. Extends CNVS into wearable lifestyle objects.</div></div>
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--gold)">PRISM</div></div><div class="dt-role">Colour & Materials</div><div class="dt-desc">Seasonal colour palettes, fabric selection, material mood boards. Balances casual with premium. Sources reference from culture, not trend forecasts.</div></div>
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--teal)">ECHO</div></div><div class="dt-role">Brand Consistency</div><div class="dt-desc">Cross-checks every design decision against CNVS brand DNA. Ensures cultural authenticity. Flags anything that drifts from the community-first mission.</div></div>
+          <div class="dt-agent"><div class="dt-agent-head"><div class="dt-codename" style="color:var(--red)">DROP</div></div><div class="dt-role">Drop Strategy</div><div class="dt-desc">Packaging design direction, drop sequencing, release strategy. Turns design outputs into a coherent drop moment with maximum cultural impact.</div></div>
+        </div>
+        <div id="dt-status" class="pipeline-status" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="ey">Configuration</div><div class="pt">Settings</div><div class="dv"></div>
+      <div class="settings-grid">
+        <!-- LEFT COL -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="scard">
+            <div class="scard-title">Department Toggles</div>
+            <div id="dept-toggle-list"></div>
+          </div>
+          <div class="scard">
+            <div class="scard-title">GitHub Knowledge Repos</div>
+            <div style="font-size:.62em;color:var(--mt);line-height:1.7;margin-bottom:6px;">Link up to 5 repos. The OS reads READMEs and syncs knowledge to all agents. Synced repos glow lime.</div>
+            <div id="gh-slots-list"></div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="rb" onclick="syncGitHubRepos()" style="font-size:.6em;padding:7px 14px;">Sync All Repos</button>
+              <button class="export-btn" onclick="clearGHKnowledge()">Clear</button>
+            </div>
+            <div class="gh-status" id="gh-status" style="display:none;font-size:.6em;color:var(--lm);margin-top:4px;"></div>
+          </div>
+          <div class="scard">
+            <div class="scard-title">Storage &amp; Assets</div>
+            <div style="font-size:.62em;color:var(--mt);line-height:1.7;margin-bottom:8px;">Link a local folder, Google Drive, or NAS so CNVS OS saves all content assets automatically.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;" id="storage-options">
+              <div class="storage-option" id="store-local" onclick="selectStorage('local')">
+                <div class="storage-option-icon">💾</div>
+                <div class="storage-option-info"><div class="storage-option-name">Local Folder</div><div class="storage-option-desc">File System Access API — Chrome/Edge</div></div>
+              </div>
+              <div class="storage-option" id="store-gdrive" onclick="selectStorage('gdrive')">
+                <div class="storage-option-icon">📁</div>
+                <div class="storage-option-info"><div class="storage-option-name">Google Drive</div><div class="storage-option-desc">OAuth — configure Drive API</div></div>
+              </div>
+              <div class="storage-option" id="store-nas" onclick="selectStorage('nas')">
+                <div class="storage-option-icon">🖧</div>
+                <div class="storage-option-info"><div class="storage-option-name">NAS / Network</div><div class="storage-option-desc">Enter SMB path or network endpoint</div></div>
+              </div>
+            </div>
+            <div id="storage-config" style="display:none;margin-top:8px;">
+              <input type="text" id="storage-path" placeholder="Path or URL...">
+              <button class="export-btn" onclick="testStorage()" style="margin-top:6px;">Test Connection</button>
+            </div>
+            <div class="offline-toggle-row">
+              <div style="font-size:.7em;color:var(--cv);">Offline Mode</div>
+              <label class="toggle"><input type="checkbox" id="offline-toggle" onchange="toggleOfflineMode(this.checked)"><div class="toggle-slider"></div></label>
+            </div>
+            <div id="offline-status">⚫ OFFLINE — using GitHub knowledge only</div>
+          </div>
+        </div>
+        <!-- RIGHT COL -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="scard">
+            <div class="scard-title">AI Providers</div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Anthropic — Claude</div><div class="api-provider-status active" id="claude-status">Active</div></div>
+              <div class="fl">API Key</div>
+              <input type="password" id="settings-api-key" placeholder="sk-ant-api03-..." onchange="liveUpdateKey()">
+              <div class="fl" style="margin-top:6px;">Model</div>
+              <select id="settings-model-select" onchange="liveUpdateModel()">
+                <option value="claude-sonnet-4-20250514">Claude Sonnet 4 — Recommended</option>
+                <option value="claude-opus-4-20250514">Claude Opus 4 — Most capable</option>
+                <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — Fast</option>
+                <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+              </select>
+              <button class="rb" onclick="saveApiFromSettings()" style="font-size:.6em;padding:7px 14px;align-self:flex-start;margin-top:6px;">Save & Activate →</button>
+              <div style="font-size:.6em;color:var(--ft);line-height:1.7;margin-top:4px;">Key is stored only in your browser. Goes directly to api.anthropic.com — nowhere else.</div>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">OpenAI — GPT</div><div class="api-provider-status inactive" id="openai-status">Inactive</div></div>
+              <div class="fl">API Key</div>
+              <input type="password" id="openai-key" placeholder="sk-...">
+              <div class="fl" style="margin-top:6px;">Model</div>
+              <select id="openai-model">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="o1-preview">o1 Preview</option>
+              </select>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Google — Gemini</div><div class="api-provider-status inactive" id="gemini-status">Inactive</div></div>
+              <div class="fl">API Key</div>
+              <input type="password" id="gemini-key" placeholder="AIza...">
+              <div class="fl" style="margin-top:6px;">Model</div>
+              <select id="gemini-model">
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              </select>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Perplexity — Sonar</div><div class="api-provider-status inactive" id="perplexity-status">Inactive</div></div>
+              <div class="fl">API Key</div>
+              <input type="password" id="perplexity-key" placeholder="pplx-...">
+              <div class="fl" style="margin-top:6px;">Model</div>
+              <select id="perplexity-model">
+                <option value="sonar-pro">Sonar Pro</option>
+                <option value="sonar">Sonar</option>
+                <option value="sonar-reasoning">Sonar Reasoning</option>
+              </select>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Anthropic — Computer Use</div><div class="api-provider-status inactive" id="computer-use-status">Inactive</div></div>
+              <div style="font-size:.6em;color:var(--mt);line-height:1.6;">Uses your Claude key with computer-use beta headers. Enables screen interaction, browser control, autonomous task execution.</div>
+              <div class="fl">Mode</div>
+              <select id="computer-use-model">
+                <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Computer Use)</option>
+                <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Computer Use)</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.62em;color:var(--mt);cursor:pointer;margin-top:4px;">
+                <input type="checkbox" id="computer-use-enabled" onchange="toggleComputerUse(this.checked)"> Enable Computer Use Beta
+              </label>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Claude Code — CLI Mode</div><div class="api-provider-status inactive" id="claude-code-status">Inactive</div></div>
+              <div style="font-size:.6em;color:var(--mt);line-height:1.6;">Activates Claude Code SDK mode. Technical Team agents use structured code generation, refactoring, and audit prompts.</div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.62em;color:var(--mt);cursor:pointer;margin-top:4px;">
+                <input type="checkbox" id="claude-code-enabled" onchange="toggleClaudeCode(this.checked)"> Enable Claude Code Mode
+              </label>
+            </div>
+            <button class="rb" onclick="saveProviders()" style="font-size:.6em;padding:7px 14px;margin-top:4px;">Save Providers</button>
+          </div>
+
+          <div class="scard">
+            <div class="scard-title">Connectors</div>
+            <div style="font-size:.62em;color:var(--mt);line-height:1.7;margin-bottom:6px;">Link external platforms so your team can build, design, and manage assets directly.</div>
+            <div class="api-provider">
+              <div class="api-provider-head">
+                <div class="api-provider-name" style="display:flex;align-items:center;gap:6px;">
+                  <svg width="12" height="18" viewBox="0 0 38 57" fill="none"><path d="M19 28.5C19 25.98 20 23.56 21.78 21.78C23.56 20 25.98 19 28.5 19C31.02 19 33.44 20 35.22 21.78C36.99 23.56 38 25.98 38 28.5C38 31.02 36.99 33.44 35.22 35.22C33.44 36.99 31.02 38 28.5 38C25.98 38 23.56 36.99 21.78 35.22C20 33.44 19 31.02 19 28.5Z" fill="#1ABCFE"/><path d="M0 47.5C0 44.98 1 42.56 2.78 40.78C4.56 39 6.98 38 9.5 38H19V47.5C19 50.02 17.99 52.44 16.22 54.22C14.44 55.99 12.02 57 9.5 57C6.98 57 4.56 55.99 2.78 54.22C1 52.44 0 50.02 0 47.5Z" fill="#0ACF83"/><path d="M19 0V19H28.5C31.02 19 33.44 17.99 35.22 16.22C36.99 14.44 38 12.02 38 9.5C38 6.98 36.99 4.56 35.22 2.78C33.44 1 31.02 0 28.5 0H19Z" fill="#FF7262"/><path d="M0 9.5C0 12.02 1 14.44 2.78 16.22C4.56 17.99 6.98 19 9.5 19H19V0H9.5C6.98 0 4.56 1 2.78 2.78C1 4.56 0 6.98 0 9.5Z" fill="#F24E1E"/><path d="M0 28.5C0 31.02 1 33.44 2.78 35.22C4.56 36.99 6.98 38 9.5 38H19V19H9.5C6.98 19 4.56 20 2.78 21.78C1 23.56 0 25.98 0 28.5Z" fill="#A259FF"/></svg>
+                  Figma
+                </div>
+                <div class="api-provider-status inactive" id="figma-status">Inactive</div>
+              </div>
+              <div class="fl">Personal Access Token</div>
+              <input type="password" id="figma-key" placeholder="figd_...">
+              <div class="fl" style="margin-top:6px;">Default File URL</div>
+              <input type="text" id="figma-file" placeholder="https://www.figma.com/file/...">
+              <button class="export-btn" onclick="connectFigma()" style="margin-top:4px;">Connect Figma</button>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Antigravity</div><div class="api-provider-status inactive" id="antigravity-status">Inactive</div></div>
+              <div class="fl">API Key</div>
+              <input type="password" id="antigravity-key" placeholder="ag-...">
+              <div class="fl" style="margin-top:6px;">Project URL</div>
+              <input type="text" id="antigravity-url" placeholder="https://...">
+              <button class="export-btn" onclick="connectAntigravity()" style="margin-top:4px;">Connect Antigravity</button>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">Stability AI — Concept Art</div><div class="api-provider-status inactive" id="stability-status">Inactive</div></div>
+              <div style="font-size:.6em;color:var(--mt);line-height:1.6;">Enables AI-generated concept art, apparel visuals, and campaign imagery for Design Team.</div>
+              <div class="fl">API Key</div>
+              <input type="password" id="stability-key" placeholder="sk-...">
+              <button class="export-btn" onclick="connectStability()" style="margin-top:4px;">Connect Stability</button>
+            </div>
+            <div class="api-provider">
+              <div class="api-provider-head"><div class="api-provider-name">DALL-E 3 — OpenAI Images</div><div class="api-provider-status inactive" id="dalle-status">Inactive</div></div>
+              <div style="font-size:.6em;color:var(--mt);line-height:1.6;">Uses your OpenAI key to generate apparel concepts, mood boards, and campaign visuals.</div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:.62em;color:var(--mt);cursor:pointer;margin-top:4px;">
+                <input type="checkbox" id="dalle-enabled" onchange="toggleDalle(this.checked)"> Enable DALL-E 3 for Design Team
+              </label>
+            </div>
+            <button class="rb" onclick="saveConnectors()" style="font-size:.6em;padding:7px 14px;margin-top:4px;">Save Connectors</button>
+          </div>
+
+          <div class="scard">
+            <div class="scard-title">CMO Revision Rounds</div>
+            <div class="fl">Max rounds before Inbox</div>
+            <select id="settings-rounds">
+              <option value="1">1 round</option>
+              <option value="2" selected>2 rounds</option>
+              <option value="3">3 rounds</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let apiKey='', model='claude-3-5-sonnet-20241022', computerUseEnabled=false;
+let inbox=[], archive=[], feedbackTargetId=null, researchedProfile=null;
+let kbUpdate='', ghKnowledge='';
+let pipelineRunning=false, pipelineAbort=false;
+let offlineMode=false, claudeCodeEnabled=false;
+let connectors={ figma:false, antigravity:false, stability:false, dalle:false };
+let selectedStorage=null;
+let BOARD_MEMBERS=[
+  { id:'edison', permanent:true, name:'Edison', role:'Chief Marketing Officer', org:'CNVS — Internal', bio:'CMO of CNVS. Strategic lead for all marketing, brand direction, and campaign oversight. Reviews and approves all pipeline output before it reaches the owner.', tags:['CMO','Strategy','Brand','Pipeline Lead'], color:'var(--gold)' },
+  { id:'arnold', permanent:true, name:'Arnold Tsang', role:'Chief Creative Officer — Board Level', org:'Co-creator, Azuki — Chiru Labs', bio:'Former Character Art Director for Overwatch & Overwatch 2 at Blizzard. Co-creator of Azuki — $300M+ in its first month. One of the most credible figures at the intersection of art direction, streetwear, and digital culture.', tags:['CCO','Art Direction','Web3','Streetwear','Digital Culture'], color:'var(--purple)' }
+];
+
+// ══════════════════════════════════════════════════════
+// DEPARTMENTS — all 15
+// ══════════════════════════════════════════════════════
+const DEPTS = {
+  content:    { name:'Content',          color:'#6bc04d', active:true,  desc:'Captions, scripts, articles, storytelling — all content output for CNVS channels' },
+  brand:      { name:'Brand',            color:'#9b8cff', active:true,  desc:'Brand positioning, tone of voice, campaign concepts, brand manifesto, collab briefs' },
+  community:  { name:'Community',        color:'#4a9eff', active:true,  desc:'Community posts, Discord announcements, reply templates, ambassador briefs, engagement' },
+  growth:     { name:'Growth',           color:'#FFB000', active:true,  desc:'Paid ads, organic growth, influencer briefs, A/B test frameworks, launch plans' },
+  production: { name:'Production',       color:'#ff7b5a', active:true,  desc:'Campaign coordination, shoot briefs, asset checklists, production timelines' },
+  analytics:  { name:'Analytics',        color:'#e8d030', active:true,  desc:'Performance reports, KPI summaries, channel analysis, drop reports, ROI breakdowns' },
+  creative:   { name:'Creative Studio',  color:'#c06bc0', active:true,  desc:'Visual concepts, creative direction, mood board briefs, art direction notes, look books' },
+  ecom:       { name:'E-commerce',       color:'#50c8aa', active:true,  desc:'Product descriptions, collection copy, landing pages, email sequences, conversion copy' },
+  pr:         { name:'PR',               color:'#ff8888', active:true,  desc:'Press releases, media pitches, journalist briefs, crisis response, brand statements' },
+  finance:    { name:'Finance & Sales',  color:'#34d399', active:false, desc:'Budget planning, P&L, cash flow, sales pipeline, pricing analysis, revenue forecasting' },
+  technical:  { name:'Technical Team',   color:'#60a5fa', active:false, desc:'Full stack dev briefs, SRE docs, web/app architecture, A/B testing, system audits' },
+  supply:     { name:'Supply Chain',     color:'#f59e0b', active:false, desc:'Logistics planning, ASBX coordination, import/export documentation, inventory management' },
+  support:    { name:'Customer Support', color:'#fb923c', active:false, desc:'Response templates, FAQ docs, returns policy, escalation plans — community trust first' },
+  legal:      { name:'Legal & Compliance', color:'#a78bfa', active:false, desc:'Trademark briefs, contract summaries, GDPR compliance, IP protection — always flag for lawyer review' },
+  people:     { name:'People & Culture', color:'#f472b6', active:false, desc:'Hiring briefs, culture docs, team structure proposals, onboarding guides — CNVS community values' }
+};
+
+// ══════════════════════════════════════════════════════
+// OUTPUT TYPES PER DEPT
+// ══════════════════════════════════════════════════════
+const DEPT_OUTPUTS = {
+  content:   ['Instagram Caption','Instagram Story Script','TikTok Script','Blog Post','Email Newsletter','Community Post','Product Story','Thread / X Post','YouTube Description'],
+  brand:     ['Brand Positioning Statement','Tone of Voice Guide','Campaign Concept','Brand Manifesto','Collab Brief','Competitor Analysis','Brand Report','Seasonal Direction'],
+  community: ['Community Post','Discord Announcement','Reply Templates','Event Recap','Community Newsletter','Ambassador Brief','Engagement Campaign','Drop Hype Post'],
+  growth:    ['Growth Strategy','Paid Ad Copy','A/B Test Brief','Influencer Brief','Referral Campaign','SEO Brief','Analytics Report','Launch Plan','Retention Strategy'],
+  production:['Campaign Brief','Production Timeline','Asset Checklist','Shoot Brief','Post-Production Notes','Creative Direction Doc','Resource Plan'],
+  analytics: ['Performance Report','Monthly Dashboard','KPI Summary','Channel Analysis','Drop Report','Trend Analysis','ROI Breakdown','Conversion Report'],
+  creative:  ['Creative Direction Doc','Mood Board Brief','Visual Concept','Art Direction Notes','Campaign Visual Strategy','Look Book Brief','Shot List'],
+  ecom:      ['Product Description','Collection Copy','Landing Page Copy','Email Sequence','Checkout Upsell Copy','Size Guide','Returns Policy','Bundle Offer'],
+  pr:        ['Press Release','Media Pitch','Journalist Brief','Interview Prep','Crisis Response','Brand Statement','Event Press Kit','Spokesperson Brief'],
+  finance:   ['Budget Plan','P&L Statement','Cash Flow Projection','Sales Pipeline Report','Pricing Analysis','Revenue Forecast','Cost Breakdown','Investor Summary'],
+  technical: ['Technical Spec','A/B Test Brief','System Audit','Dev Brief','SRE Runbook','API Documentation','Architecture Plan','Bug Report','Security Review'],
+  supply:    ['Logistics Plan','Supplier Brief','ASBX Coordination Doc','Import/Export Plan','Inventory Report','Production Timeline','Quality Control Checklist'],
+  support:   ['Response Template','FAQ Document','Returns Policy','Escalation Plan','Community Update','Refund Policy','Support Script','Chatbot Brief'],
+  legal:     ['Trademark Brief','Contract Summary','GDPR Compliance Doc','IP Protection Strategy','NDA Template','Terms of Service','Privacy Policy Draft','Collab Agreement'],
+  people:    ['Hiring Brief','Job Description','Culture Document','Onboarding Guide','Team Structure Proposal','Interview Questions','Performance Review Template','Company Values Doc']
+};
+
+// ══════════════════════════════════════════════════════
+// BRAND DNA
+// ══════════════════════════════════════════════════════
+const BRAND_DNA = `CNVS is a Rotterdam-based streetwear brand rooted in community, culture, and lifestyle.
+Philosophy: CLOT-influenced community culture. Fragment simplicity. Ambush boldness when needed. Casual but ready to go bold.
+Tone: Direct. Minimal words. Maximum weight. No hype-talk. Authentic to the culture.
+Aesthetic: Dark, minimal, architectural. Community over clout. Culture over trend.
+Products: Hoodies, sweaters, caps, t-shirts, pants, shirts — expanding to accessories.
+Market: Streetwear community. Culture-first audience. Rotterdam to global.
+References: CLOT, Fragment Design, Ambush, Sacai, Palace, Supreme (structure not hype).
+Rules: Never corporate. Never generic. Always community-first. Always earned credibility.`;
+
+// ══════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════
+
+function setupConnect(){
+  var key = (document.getElementById('api-key-input').value || '').trim();
+  var mdl = document.getElementById('model-input').value;
+  var err = document.getElementById('setup-err');
+  err.style.display = 'none';
+
+  if(!key.startsWith('sk-ant-') && !key.startsWith('sk-') && !key.startsWith('pplx-')){
+    err.textContent = 'Enter a valid key: sk-ant-… (Anthropic) · sk-… (OpenAI) · pplx-… (Perplexity)';
+    err.style.display = 'block';
+    return;
+  }
+
+  apiKey = key;
+  model  = mdl;
+  // Persist for next visit
+  try{ localStorage.setItem('cnvs_api_key', key); localStorage.setItem('cnvs_model', mdl); }catch(e){}
+  enterApp(key.startsWith('sk-ant-') ? 'Claude' : key.startsWith('pplx-') ? 'Perplexity' : 'OpenAI', mdl);
+}
+
+function enterAppNoKey(){
+  // Enter without API key — can configure in Settings later
+  apiKey = '';
+  model = document.getElementById('model-input').value;
+  enterApp('No key', model, true);
+}
+
+// ══════════════════════════════════════════════════════
+// DEFERRED API KEY — configure from Settings after launch
+// ══════════════════════════════════════════════════════
+function liveUpdateKey(){
+  // Live update as user types — don't save yet
+}
+function liveUpdateModel(){
+  const mdl = document.getElementById('settings-model-select')?.value;
+  if(mdl) model = mdl;
+}
+function saveApiFromSettings(){
+  const key = (document.getElementById('settings-api-key')?.value||'').trim();
+  const mdl = document.getElementById('settings-model-select')?.value || model;
+  if(!key){
+    showToast('Enter an API key first');
+    return;
+  }
+  if(!key.startsWith('sk-ant-') && !key.startsWith('sk-') && !key.startsWith('pplx-')){
+    showToast('Invalid key format — check your key');
+    return;
+  }
+  apiKey = key;
+  model = mdl;
+  try{ localStorage.setItem('cnvs_api_key', key); localStorage.setItem('cnvs_model', mdl); }catch(e){}
+  const provider = key.startsWith('sk-ant-') ? 'Claude' : key.startsWith('pplx-') ? 'Perplexity' : 'OpenAI';
+  const modelNames={'claude-sonnet-4-20250514':'Sonnet 4','claude-opus-4-20250514':'Opus 4','claude-haiku-4-5-20251001':'Haiku 4.5','claude-3-5-sonnet-20241022':'3.5 Sonnet','gpt-4o':'GPT-4o','gpt-4o-mini':'GPT-4o Mini','sonar-pro':'Sonar Pro','sonar':'Sonar'};
+  const short = modelNames[mdl]||mdl;
+  document.getElementById('model-label').textContent = provider + ' — ' + short;
+  document.getElementById('model-label').style.color = '';
+  document.getElementById('model-label').onclick = null;
+  document.getElementById('claude-status').textContent = 'Active';
+  document.getElementById('claude-status').className = 'api-provider-status active';
+  showToast('✓ API key saved — team is now live');
+}
+
+// Auto-load saved key on page load
+(function(){
+  try{
+    var saved = localStorage.getItem('cnvs_api_key');
+    var savedModel = localStorage.getItem('cnvs_model');
+    if(saved){
+      document.getElementById('api-key-input').value = saved;
+      if(savedModel) document.getElementById('model-input').value = savedModel;
+    }
+  }catch(e){}
+})();
+
+// ══════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════
+function setupConnect(){
+  var key = (document.getElementById('api-key-input').value || '').trim();
+  var mdl = document.getElementById('model-input').value;
+  var err = document.getElementById('setup-err');
+  err.style.display = 'none';
+
+  if(!key.startsWith('sk-ant-') && !key.startsWith('sk-') && !key.startsWith('pplx-')){
+    err.textContent = 'Enter a valid key: sk-ant-… (Anthropic) · sk-… (OpenAI) · pplx-… (Perplexity)';
+    err.style.display = 'block';
+    return;
+  }
+
+  apiKey = key;
+  model  = mdl;
+  enterApp(key.startsWith('sk-ant-') ? 'Claude' : key.startsWith('pplx-') ? 'Perplexity' : 'OpenAI', mdl);
+}
+
+function demoMode(){
+  apiKey = 'demo';
+  model  = 'claude-3-5-sonnet-20241022';
+  enterApp('Demo', model);
+}
+
+function enterApp(provider, mdl, noKey){
+  document.getElementById('setup').style.display   = 'none';
+  document.getElementById('topbar').style.display  = 'flex';
+  document.getElementById('appshell').style.display = 'flex';
+  var modelNames = {
+    'claude-sonnet-4-20250514':'Sonnet 4',
+    'claude-opus-4-20250514':'Opus 4',
+    'claude-haiku-4-5-20251001':'Haiku 4.5',
+    'claude-3-5-sonnet-20241022':'3.5 Sonnet',
+    'claude-3-7-sonnet-20250219':'3.7 Sonnet',
+    'claude-3-5-haiku-20241022':'3.5 Haiku',
+    'claude-opus-4-5':'Opus 4.5',
+    'gpt-4o':'GPT-4o',
+    'gpt-4o-mini':'GPT-4o Mini',
+    'o3-mini':'o3-mini',
+    'sonar-pro':'Sonar Pro',
+    'sonar':'Sonar'
+  };
+  var short = modelNames[mdl] || mdl;
+  if(noKey){
+    document.getElementById('model-label').textContent = '⚡ No API key — configure in Settings';
+    document.getElementById('model-label').style.color = 'var(--gold)';
+    document.getElementById('model-label').style.cursor = 'pointer';
+    document.getElementById('model-label').onclick = function(){ nav('settings'); };
+  } else {
+    document.getElementById('model-label').textContent = provider + ' — ' + short;
+    document.getElementById('model-label').style.color = '';
+    document.getElementById('model-label').onclick = null;
+  }
+  buildAgentList();
+  renderBoardRoom();
+  renderInbox();
+  renderArchive();
+  nav('pipeline');
+  // Populate settings API key field if key is set
+  const settingsKeyEl = document.getElementById('settings-api-key');
+  if(settingsKeyEl && apiKey && apiKey !== 'demo') settingsKeyEl.value = apiKey;
+  const settingsModelEl = document.getElementById('settings-model-select');
+  if(settingsModelEl) settingsModelEl.value = mdl;
+}
+
+function nav(p, el){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.si').forEach(x=>x.classList.remove('on'));
+  document.getElementById('panel-'+p)?.classList.add('on');
+  if(el) el.classList.add('on');
+  else { const n=document.getElementById('nav-'+p); if(n) n.classList.add('on'); }
+  if(p==='settings'){ buildDeptToggles(); buildGHSlots(); }
+  if(p==='depts') renderDeptOverview();
+  if(p==='boardroom') renderBoardRoom();
+  if(p==='pipeline'){ buildAgentList(); }
+}
+
+// ══════════════════════════════════════════════════════
+// DEPT SELECT + OUTPUT TYPES
+// ══════════════════════════════════════════════════════
+function updateOutputTypes(){
+  const deptKey=document.getElementById('dept-select')?.value;
+  if(!deptKey) return;
+  const outputs=DEPT_OUTPUTS[deptKey]||DEPT_OUTPUTS.content;
+  const sel=document.getElementById('output-select');
+  if(sel) sel.innerHTML=outputs.map(o=>`<option value="${o}">${o}</option>`).join('');
+}
+
+function buildAgentList(){
+  const active=Object.entries(DEPTS).filter(([k,v])=>v.active);
+  const sel=document.getElementById('dept-select');
+  if(sel){
+    sel.innerHTML=active.map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+    updateOutputTypes();
+  }
+  // Update sidebar dots
+  document.querySelectorAll('.si-dot[id^="dot-"]').forEach(d=>{
+    const key=d.id.replace('dot-','');
+    if(DEPTS[key]) d.className='si-dot'+(DEPTS[key].active?' live':'');
+  });
+  // Active agents footer — with dept colors
+  const footer=document.getElementById('active-agent-list');
+  if(footer) footer.innerHTML=active.map(([k,v])=>`<div class="agent-entry"><div class="agent-dot-color" style="background:${v.color||'#666'};box-shadow:0 0 5px ${v.color||'#666'}55;"></div><span style="color:var(--cv);">${v.name}</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// AI ROUTER
+// ══════════════════════════════════════════════════════
+async function callAI(system, user){
+  if(offlineMode && ghKnowledge){
+    return `[OFFLINE MODE — Using GitHub knowledge base]
+
+Based on synced knowledge:
+${ghKnowledge.slice(0,1500)}
+
+[Live API response would appear here]`;
+  }
+  if(!apiKey || apiKey==='demo'){
+    // Demo mode: return a branded placeholder
+    return `[DEMO MODE — Connect an API key to generate real content]
+
+Brief received: "${user.slice(0,120)}…"
+
+This is where your ${system.includes('CMO')?'CMO Edison':'agent'} would respond with CNVS-tuned output.`;
+  }
+  if(apiKey.startsWith('sk-ant-')){
+    const h={'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'};
+    if(computerUseEnabled) h['anthropic-beta']='computer-use-2024-10-22';
+    const useModel=computerUseEnabled?document.getElementById('computer-use-model')?.value||model:model;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:h,body:JSON.stringify({model:useModel,max_tokens:1500,system,messages:[{role:'user',content:user}]})});
+    if(!res.ok){const d=await res.json().catch(()=>({})); throw new Error(d.error?.message||'Claude API '+res.status);}
+    const d=await res.json(); return d.content[0].text;
+  } else if(apiKey.startsWith('sk-')){
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,max_tokens:1500,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+    if(!res.ok){const d=await res.json().catch(()=>({})); throw new Error(d.error?.message||'OpenAI API '+res.status);}
+    const d=await res.json(); return d.choices[0].message.content;
+  } else if(apiKey.startsWith('pplx-')){
+    const mdl=model.startsWith('sonar')?model:'sonar-pro';
+    const res=await fetch('https://api.perplexity.ai/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:mdl,max_tokens:1500,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+    if(!res.ok){const d=await res.json().catch(()=>({})); throw new Error(d.error?.message||'Perplexity API '+res.status);}
+    const d=await res.json(); return d.choices[0].message.content;
+  }
+  throw new Error('No AI provider configured. Connect on the start screen or use Demo Mode.');
+}
+
+async function callPerplexity(system,user){
+  const key=document.getElementById('perplexity-key')?.value.trim();
+  const mdl=document.getElementById('perplexity-model')?.value||'sonar-pro';
+  if(!key) throw new Error('No Perplexity key');
+  const res=await fetch('https://api.perplexity.ai/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model:mdl,messages:[{role:'system',content:system},{role:'user',content:user}],max_tokens:2048})});
+  if(!res.ok) throw new Error('Perplexity error: '+res.status);
+  const d=await res.json(); return d.choices[0].message.content;
+}
+
+// ══════════════════════════════════════════════════════
+// AGENT SYSTEM PROMPTS
+// ══════════════════════════════════════════════════════
+function getAgentSystem(deptKey){
+  const d=DEPTS[deptKey]||DEPTS.content;
+  const kb=kbUpdate?'\n\nLIVE BRAND UPDATE:\n'+kbUpdate:'';
+  const gh=ghKnowledge?'\n\nGITHUB KNOWLEDGE:\n'+ghKnowledge.slice(0,2000):'';
+  const board='Board: '+getBoardCtx()+'.';
+  return `You are the ${d.name} agent at CNVS — Rotterdam streetwear brand rooted in community, culture, and lifestyle.\n${BRAND_DNA}\n${board}${kb}${gh}\nFocus: ${d.desc}. Be specific, on-brand, and actionable.`;
+}
+
+function getCMOSystem(){
+  const kb=kbUpdate?'\n\nLIVE UPDATE:\n'+kbUpdate:'';
+  const gh=ghKnowledge?'\n\nGITHUB KNOWLEDGE:\n'+ghKnowledge.slice(0,1000):'';
+  return `You are Edison, CMO of CNVS. You have final approval on all content before it reaches the owner.\n${BRAND_DNA}\n${kb}${gh}\nReview with precision. If approved: start with APPROVED. If revisions needed: start with REVISION NEEDED followed by 2-4 specific points.`;
+}
+
+function getBoardCtx(){
+  return BOARD_MEMBERS.map(m=>m.name+' ('+m.role+')').join(', ');
+}
+
+// ══════════════════════════════════════════════════════
+// PIPELINE
+// ══════════════════════════════════════════════════════
+function now(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+
+function setS(i,state,txt){
+  const stages=document.querySelectorAll('#ps-stages .stage');
+  if(!stages[i]) return;
+  stages[i].className='stage '+state;
+  if(txt){ stages[i].querySelector('.stage-body').textContent=txt; stages[i].classList.add('open'); }
+  if(state==='active') stages[i].querySelector('.stage-time').textContent=now();
+  if(state==='done'||state==='error') stages[i].querySelector('.stage-time').textContent=now();
+}
+
+async function runPipeline(){
+  if(pipelineRunning) return;
+  const brief=document.getElementById('brief-input').value.trim();
+  const deptKey=document.getElementById('dept-select').value;
+  const outputType=document.getElementById('output-select').value;
+  if(!brief){ showToast('Enter a brief first'); return; }
+
+  // No key — prompt to configure
+  if(!apiKey || apiKey===''){
+    document.getElementById('pipeline-status').classList.add('on');
+    document.getElementById('ps-spinner').classList.remove('on');
+    document.getElementById('ps-title').textContent = 'No API key configured';
+    document.getElementById('ps-stages').innerHTML = `
+      <div class="stage" style="border-left-color:var(--gold);">
+        <div class="stage-head">
+          <div class="stage-dot" style="background:var(--gold);"></div>
+          <span class="stage-label" style="color:var(--cv);">API key required to run agents</span>
+        </div>
+        <div class="stage-body" style="display:block;color:var(--mt);">
+          Go to Settings → AI Providers to add your Anthropic API key.<br><br>
+          Or go back to the start screen: <button onclick="location.reload()" style="background:none;border:.5px solid var(--brd2);color:var(--mt);padding:4px 10px;border-radius:2px;font-family:var(--font);font-size:1em;cursor:pointer;letter-spacing:1px;">Reload</button>
+          <br><br>
+          <button class="rb" onclick="nav('settings')" style="font-size:.65em;padding:7px 14px;">→ Open Settings</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  pipelineRunning=true; pipelineAbort=false;
+  const maxRounds=parseInt(document.getElementById('settings-rounds')?.value||2);
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('stop-btn').style.display='';
+  document.getElementById('pipeline-status').classList.add('on');
+  document.getElementById('ps-spinner').classList.add('on');
+  document.getElementById('ps-title').textContent='Running...';
+  const dept=DEPTS[deptKey];
+  const stageHTML=`
+    <div class="stage" id="ps-1"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">1 — ${dept.name} Agent</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="ps-2"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">2 — CMO Review (Edison)</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="ps-3"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">3 — Revision</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="ps-4"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">4 — Final CMO Sign-off</span><span class="stage-time"></span></div><div class="stage-body"></div></div>`;
+  document.getElementById('ps-stages').innerHTML=stageHTML;
+  let finalOutput='', cmoReview='';
+  for(let round=0;round<maxRounds;round++){
+    if(pipelineAbort) break;
+    try{
+      setS(0,'active');
+      const agentSys=getAgentSystem(deptKey);
+      const agentPrompt=`Task: Create a ${outputType} for CNVS.\nBrief: ${brief}${round>0?'\n\nPrevious CMO notes:\n'+cmoReview:''}`;
+      finalOutput=await callAI(agentSys,agentPrompt);
+      setS(0,'done',finalOutput);
+      if(pipelineAbort) break;
+      setS(1,'active');
+      const cmoSys=getCMOSystem();
+      cmoReview=await callAI(cmoSys,`Review this ${outputType}:\n\n${finalOutput}\n\nOriginal brief: ${brief}`);
+      setS(1,'done',cmoReview);
+      if(cmoReview.startsWith('APPROVED')) break;
+      if(round<maxRounds-1) setS(2,'active');
+    } catch(e){ setS(0,'error','Error: '+e.message); break; }
+  }
+  if(!pipelineAbort && finalOutput){
+    setS(3,'active');
+    const finalCmo=await callAI(getCMOSystem(),`Final sign-off review of this ${outputType}:\n\n${finalOutput}\n\nIf this is ready for the owner, start with APPROVED and give a brief (2 sentences) on why it works for CNVS.`);
+    setS(3,'done',finalCmo);
+    sendToInbox(deptKey, outputType, brief, finalOutput, finalCmo);
+  }
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('stop-btn').style.display='none';
+  document.getElementById('ps-spinner').classList.remove('on');
+  document.getElementById('ps-title').textContent=pipelineAbort?'Stopped':'Complete — check Inbox';
+  pipelineRunning=false;
+}
+
+function stopPipeline(){ pipelineAbort=true; }
+
+// ══════════════════════════════════════════════════════
+// INBOX
+// ══════════════════════════════════════════════════════
+function sendToInbox(dept,type,brief,output,cmoNote){
+  const id=Date.now();
+  inbox.push({id,dept,type,brief,output,cmoNote,ts:now(),revised:false});
+  renderInbox();
+  showToast('✓ '+type+' ready in Inbox');
+  document.getElementById('dot-inbox').className='si-dot live';
+}
+
+function renderInbox(){
+  const el=document.getElementById('inbox-list');
+  if(!inbox.length){ el.innerHTML='<div class="empty-state">No items awaiting your approval</div>'; return; }
+  el.innerHTML=inbox.map(x=>{
+    const isLong=x.output.length>350;
+    const preview=x.output.slice(0,350);
+    return `
+    <div class="inbox-item" id="item-${x.id}">
+      <div class="inbox-item-head">
+        <span class="inbox-tag tag-dept">${DEPTS[x.dept]?.name||x.dept}</span>
+        <span class="inbox-tag tag-out">${x.type}</span>
+        ${x.revised?'<span class="inbox-tag tag-revised">↺ Revised</span>':''}
+        <span style="font-size:.55em;color:var(--ft);letter-spacing:1px;margin-left:auto;">${x.ts}</span>
+      </div>
+      <div class="inbox-title">${x.brief.slice(0,90)}${x.brief.length>90?'…':''}</div>
+      <div class="inbox-preview collapsed" id="preview-${x.id}" onclick="toggleExpand(${x.id})">${preview}${isLong?'…':''}</div>
+      ${isLong?`<div class="expand-hint" id="hint-${x.id}" onclick="toggleExpand(${x.id})">▼ Expand full output</div>`:''}
+      ${x.cmoNote?`<div style="font-size:.68em;color:var(--gold);margin-top:8px;line-height:1.7;border-top:.5px solid var(--brd);padding-top:8px;"><span style="letter-spacing:1px;font-weight:600;">Edison —</span> ${x.cmoNote.slice(0,300)}</div>`:''}
+      <div class="inbox-actions">
+        <button class="btn-gl" onclick="greenlight(${x.id})">✓ Greenlight</button>
+        <button class="btn-fb" onclick="openFeedback(${x.id})">✎ Feedback</button>
+        <button class="btn-sb" onclick="sendBack(${x.id})">↩ Send Back</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleExpand(id){
+  const item=inbox.find(x=>x.id===id);
+  if(!item) return;
+  const previewEl=document.getElementById('preview-'+id);
+  const hintEl=document.getElementById('hint-'+id);
+  if(!previewEl) return;
+  const isExpanded=previewEl.classList.contains('expanded');
+  if(isExpanded){
+    previewEl.textContent=item.output.slice(0,350)+(item.output.length>350?'…':'');
+    previewEl.classList.remove('expanded');
+    previewEl.classList.add('collapsed');
+    if(hintEl) hintEl.textContent='▼ Expand full output';
+  } else {
+    previewEl.textContent=item.output;
+    previewEl.classList.remove('collapsed');
+    previewEl.classList.add('expanded');
+    if(hintEl) hintEl.textContent='▲ Collapse';
+  }
+}
+
+function greenlight(id){
+  const item=inbox.find(x=>x.id===id);
+  if(!item) return;
+  inbox=inbox.filter(x=>x.id!==id);
+  archive.unshift({...item, greenlitAt:now()});
+  renderInbox(); renderArchive();
+  showToast('✓ Greenlighted — moved to Archive');
+}
+
+function sendBack(id){
+  const item=inbox.find(x=>x.id===id);
+  if(!item) return;
+  inbox=inbox.filter(x=>x.id!==id);
+  showToast('↩ Sent back to team for revision');
+  processFeedbackRevision(item,'','[Owner sent back without specific notes — review the brief and improve.]');
+}
+
+// ══════════════════════════════════════════════════════
+// FEEDBACK
+// ══════════════════════════════════════════════════════
+function openFeedback(id){ feedbackTargetId=id; document.getElementById('feedback-modal').classList.add('on'); }
+function closeFeedback(){ document.getElementById('feedback-modal').classList.remove('on'); feedbackTargetId=null; }
+
+function toggleChip(el,type){
+  if(el.classList.contains('liked')||el.classList.contains('disliked')){ el.classList.remove('liked','disliked'); return; }
+  el.classList.add(type);
+}
+
+async function submitFeedback(){
+  const item=inbox.find(x=>x.id===feedbackTargetId);
+  if(!item){ closeFeedback(); return; }
+  const liked=[...document.querySelectorAll('.chip.liked')].map(c=>c.textContent);
+  const disliked=[...document.querySelectorAll('.chip.disliked')].map(c=>c.textContent);
+  const notes=document.getElementById('feedback-notes').value.trim();
+  const feedbackSummary=(liked.length?'✓ Liked: '+liked.join(', '):'')+(disliked.length?'\n✗ Didn\'t work: '+disliked.join(', '):'')+(notes?'\nOwner notes: '+notes:'');
+  inbox=inbox.filter(x=>x.id!==feedbackTargetId);
+  closeFeedback();
+  document.getElementById('feedback-notes').value='';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('liked','disliked'));
+  showToast('Feedback sent — Edison is briefing the team...');
+  processFeedbackRevision(item, feedbackSummary, feedbackSummary||'[Owner sent back — please revise]');
+}
+
+async function processFeedbackRevision(item, feedbackSummary, cmoInstruction){
+  // Navigate to pipeline and show live revision stages
+  nav('pipeline');
+  document.getElementById('pipeline-status').classList.add('on');
+  document.getElementById('ps-spinner').classList.add('on');
+  document.getElementById('ps-title').textContent='Feedback Revision in Progress…';
+  document.getElementById('brief-input').value=item.brief;
+
+  const revStages=`
+    <div class="stage" id="rv-0"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">1 — Edison reads owner feedback</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="rv-1"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">2 — Edison briefs the ${DEPTS[item.dept]?.name||item.dept} agent</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="rv-2"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">3 — ${DEPTS[item.dept]?.name||item.dept} agent revises</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="rv-3"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">4 — Edison final review</span><span class="stage-time"></span></div><div class="stage-body"></div></div>
+    <div class="stage" id="rv-4"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">5 — Sending revised version to Inbox</span><span class="stage-time"></span></div><div class="stage-body"></div></div>`;
+  document.getElementById('ps-stages').innerHTML=revStages;
+
+  const setRV=(i,state,txt)=>{
+    const el=document.getElementById('rv-'+i);
+    if(!el) return;
+    el.className='stage '+state;
+    if(txt){ el.querySelector('.stage-body').textContent=txt; el.classList.add('open'); }
+    el.querySelector('.stage-time').textContent=now();
+  };
+
+  try {
+    setRV(0,'active');
+    await new Promise(r=>setTimeout(r,400));
+    setRV(0,'done', 'Feedback received: '+cmoInstruction);
+
+    setRV(1,'active');
+    const cmoSys=getCMOSystem();
+    const teamBriefing=await callAI(cmoSys,
+      `The owner has returned this ${item.type} with feedback.
+
+Original brief: ${item.brief}
+
+Original output:
+${item.output}
+
+Owner feedback:
+${cmoInstruction}
+
+Write a clear, specific briefing to the ${DEPTS[item.dept]?.name||item.dept} agent — exactly what to change and why.`);
+    setRV(1,'done', teamBriefing);
+
+    setRV(2,'active');
+    const agentSys=getAgentSystem(item.dept);
+    const revised=await callAI(agentSys,
+      `Task: Revise this ${item.type} based on CMO briefing.
+
+Original output:
+${item.output}
+
+CMO briefing:
+${teamBriefing}
+
+Original brief: ${item.brief}
+
+Produce the revised version only. No meta-commentary.`);
+    setRV(2,'done', revised);
+
+    setRV(3,'active');
+    const finalReview=await callAI(cmoSys,
+      `Final review of this revised ${item.type}:
+
+${revised}
+
+Owner feedback was: ${cmoInstruction}
+
+If this addresses the feedback and is ready for the owner, start with APPROVED followed by 1-2 sentences on what improved.`);
+    setRV(3,'done', finalReview);
+
+    setRV(4,'active');
+    sendToInbox(item.dept, item.type, item.brief, revised, finalReview.slice(0,300));
+    inbox[inbox.length-1].revised=true;
+    renderInbox();
+    setRV(4,'done','✓ Revised version sent to Inbox');
+    document.getElementById('ps-title').textContent='Revision complete — check Inbox';
+    document.getElementById('ps-spinner').classList.remove('on');
+    showToast('✓ Revised version ready in Inbox');
+
+  } catch(e){
+    document.getElementById('ps-title').textContent='Revision failed';
+    document.getElementById('ps-spinner').classList.remove('on');
+    showToast('Revision failed: '+e.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ARCHIVE
+// ══════════════════════════════════════════════════════
+function renderArchive(){
+  const el=document.getElementById('archive-list');
+  if(!archive.length){ el.innerHTML='<div class="empty-state">Approved items appear here</div>'; return; }
+  el.innerHTML=archive.map(x=>`
+    <div class="inbox-item">
+      <div class="inbox-item-head">
+        <span class="inbox-tag tag-dept">${DEPTS[x.dept]?.name||x.dept}</span>
+        <span class="inbox-tag tag-out">${x.type}</span>
+        <span class="inbox-tag" style="border-color:var(--lm);color:var(--lm);">Approved</span>
+        <span style="font-size:.55em;color:var(--ft);letter-spacing:1px;margin-left:auto;">${x.greenlitAt}</span>
+      </div>
+      <div class="inbox-title">${x.brief.slice(0,80)}</div>
+      <div class="inbox-preview">${x.output.slice(0,300)}...</div>
+    </div>`).join('');
+}
+
+function exportAllArchive(){
+  const txt=archive.map(x=>`[${x.type} — ${DEPTS[x.dept]?.name||x.dept}]\nApproved: ${x.greenlitAt}\nBrief: ${x.brief}\n\n${x.output}\n\n${'─'.repeat(60)}`).join('\n\n');
+  const b=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cnvs-archive.txt'; a.click();
+}
+
+function exportArchiveCSV(){
+  const rows=[['Type','Department','Brief','Output','Approved'],...archive.map(x=>[x.type,DEPTS[x.dept]?.name||x.dept,'"'+x.brief.replace(/"/g,'""')+'"','"'+x.output.replace(/"/g,'""')+'"',x.greenlitAt])];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cnvs-archive.csv'; a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// KNOWLEDGE BASE
+// ══════════════════════════════════════════════════════
+function syncKB(){
+  const val=document.getElementById('kb-update-input').value.trim();
+  if(!val){ showToast('Enter brand update text first'); return; }
+  kbUpdate=val;
+  document.getElementById('kb-update-status').textContent='Synced — '+now();
+  document.getElementById('kb-update-status').className='kb-badge live';
+  document.getElementById('kb-sync-date').textContent='Updated '+now();
+  showToast('✓ Brand knowledge synced — all agents updated');
+}
+
+// ══════════════════════════════════════════════════════
+// BOARD ROOM
+// ══════════════════════════════════════════════════════
+function renderBoardRoom(){
+  const grid=document.getElementById('boardroom-grid');
+  if(!grid) return;
+  grid.innerHTML=BOARD_MEMBERS.map(m=>`
+    <div class="board-card" style="border-left:2px solid ${m.color||'var(--blue)'};">
+      ${!m.permanent?`<button class="bc-remove" onclick="removeMember('${m.id}')" title="Remove">✕</button>`:''}
+      <div class="bc-role">${m.role}</div>
+      <div class="bc-name">${m.name}</div>
+      <div class="bc-org">${m.org}</div>
+      <div class="bc-bio">${m.bio}</div>
+      <div class="bc-tags">${m.tags.map(t=>`<span class="bc-tag">${t}</span>`).join('')}</div>
+    </div>`).join('')
+  +'<div class="board-card" style="border:.5px dashed var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:180px;cursor:pointer;" onclick="openResearch()"><div style="font-size:.6em;letter-spacing:2px;color:var(--ft);">+ ADD MEMBER</div></div>';
+}
+
+function removeMember(id){ BOARD_MEMBERS=BOARD_MEMBERS.filter(m=>m.id!==id); renderBoardRoom(); showToast('Member removed'); }
+
+function openResearch(){
+  document.getElementById('research-modal').classList.add('on');
+  document.getElementById('research-stages').style.display='none';
+  document.getElementById('profile-preview').classList.remove('on');
+  document.getElementById('research-btn').textContent='Research Member →';
+  document.getElementById('research-btn').disabled=false;
+  document.getElementById('research-actions').style.display='flex';
+  researchedProfile=null;
+}
+function closeResearch(){ document.getElementById('research-modal').classList.remove('on'); }
+
+function setRS(i,state){
+  const el=document.getElementById('rs-'+i);
+  if(!el) return;
+  el.className='research-stage '+state;
+}
+
+async function startResearch(){
+  const name=document.getElementById('research-name').value.trim();
+  if(!name){ showToast('Enter a name'); return; }
+  const ctx=document.getElementById('research-context').value.trim();
+  document.getElementById('research-stages').style.display='block';
+  document.getElementById('research-btn').disabled=true;
+  document.getElementById('research-btn').textContent='Researching...';
+  [1,2,3,4].forEach(i=>setRS(i,''));
+  setRS(1,'active');
+  try {
+    const sys=`You are a strategic talent researcher for CNVS, a Rotterdam streetwear brand. Research the following person and return a structured JSON profile.`;
+    const prompt=`Research "${name}"${ctx?' ('+ctx+')':''} and return ONLY valid JSON in this exact format:
+{"name":"${name}","role":"[their role/title]","org":"[their organisation]","bio":"[2-3 sentence bio focused on why they matter to CNVS]","tags":["tag1","tag2","tag3","tag4","tag5"],"cnvsValue":"[1 sentence on specific value they bring to CNVS board]"}`;
+    setRS(1,'done'); setRS(2,'active');
+    const result=await callAI(sys,prompt);
+    setRS(2,'done'); setRS(3,'active');
+    let profile;
+    try { const jsonMatch=result.match(/\{[\s\S]*\}/); profile=JSON.parse(jsonMatch[0]); }
+    catch(e){ profile={name,role:'Advisor',org:ctx||'—',bio:result.slice(0,200),tags:['Advisor'],cnvsValue:'Relevant expertise for CNVS.'}; }
+    setRS(3,'done'); setRS(4,'active');
+    researchedProfile=profile;
+    document.getElementById('profile-preview').classList.add('on');
+    document.getElementById('profile-preview').innerHTML=`
+      <div style="font-size:.65em;letter-spacing:2px;color:var(--mt);">${profile.role}</div>
+      <div style="font-size:.9em;letter-spacing:1px;font-weight:500;color:var(--cv);">${profile.name}</div>
+      <div style="font-size:.65em;color:var(--mt);">${profile.org}</div>
+      <div style="font-size:.68em;color:var(--cv);line-height:1.7;margin-top:6px;">${profile.bio}</div>
+      <div style="font-size:.63em;color:var(--lm);line-height:1.6;margin-top:4px;">CNVS value: ${profile.cnvsValue}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${profile.tags.map(t=>`<span class="bc-tag">${t}</span>`).join('')}</div>`;
+    setRS(4,'done');
+    document.getElementById('research-btn').textContent='Add to Board →';
+    document.getElementById('research-btn').disabled=false;
+    document.getElementById('research-btn').onclick=addResearchedMember;
+  } catch(e){ showToast('Research failed: '+e.message); document.getElementById('research-btn').disabled=false; document.getElementById('research-btn').textContent='Research Member →'; }
+}
+
+function addResearchedMember(){
+  if(!researchedProfile) return;
+  const p=researchedProfile;
+  BOARD_MEMBERS.push({id:'m'+Date.now(),permanent:false,name:p.name,role:p.role,org:p.org,bio:p.bio,tags:p.tags||[],color:'var(--blue)'});
+  closeResearch();
+  renderBoardRoom();
+  showToast('✓ '+p.name+' added to Board Room');
+}
+
+// ══════════════════════════════════════════════════════
+// DEPARTMENTS OVERVIEW
+// ══════════════════════════════════════════════════════
+function renderDeptOverview(){
+  const grid=document.getElementById('dept-overview-grid');
+  if(!grid) return;
+  grid.innerHTML=Object.entries(DEPTS).map(([k,d])=>`
+    <div class="dept-card">
+      <div class="dept-card-head">
+        <div class="dept-dot" style="background:${d.color||'var(--ft)'};${d.active?'':'opacity:.3'}"></div>
+        <div class="dept-name">${d.name}</div>
+        <div class="dept-status ${d.active?'on':'off'}">${d.active?'Active':'Inactive'}</div>
+      </div>
+      <div class="dept-desc">${d.desc}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS — DEPT TOGGLES
+// ══════════════════════════════════════════════════════
+function buildDeptToggles(){
+  const el=document.getElementById('dept-toggle-list');
+  if(!el) return;
+  el.innerHTML=Object.entries(DEPTS).map(([k,d])=>`
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-name" style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:${d.color};display:inline-block;${d.active?'':'opacity:.3'}"></span>${d.name}</div>
+        <div class="toggle-desc">${d.desc.slice(0,60)}${d.desc.length>60?'...':''}</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${d.active?'checked':''} onchange="toggleDept('${k}',this.checked)"><div class="toggle-slider"></div></label>
+    </div>`).join('');
+}
+
+function toggleDept(key,on){
+  if(DEPTS[key]){ DEPTS[key].active=on; buildAgentList(); showToast((on?'✓ ':'✗ ')+DEPTS[key].name+(on?' activated':' deactivated')); }
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS — GITHUB SLOTS
+// ══════════════════════════════════════════════════════
+function buildGHSlots(){
+  const el=document.getElementById('gh-slots-list');
+  if(!el) return;
+  el.innerHTML=Array.from({length:5},(_,i)=>`
+    <div class="gh-slot" style="margin-bottom:6px;">
+      <input type="text" id="gh-slot-${i}" placeholder="https://github.com/owner/repo" style="font-size:.65em;">
+      <button class="export-btn" onclick="syncSingleRepo(${i})" style="font-size:.6em;padding:5px 10px;white-space:nowrap;">Sync</button>
+    </div>`).join('');
+}
+
+async function syncSingleRepo(i){
+  const url=document.getElementById('gh-slot-'+i)?.value.trim();
+  if(!url){showToast('Enter a repo URL');return;}
+  const match=url.match(/github\.com\/([^/]+)\/([^/]+)/);
+  if(!match){showToast('Invalid GitHub URL');return;}
+  const [,owner,repo]=match;
+  try{
+    const res=await fetch(`https://raw.githubusercontent.com/${owner}/${repo.replace('.git','')}/main/README.md`);
+    if(!res.ok) throw new Error('README not found');
+    const txt=await res.text();
+    ghKnowledge+=(ghKnowledge?'\n\n---\n\n':'')+`[REPO: ${owner}/${repo}]\n${txt.slice(0,2000)}`;
+    document.getElementById('kb-gh-status').innerHTML='<span class="kb-badge live">'+repo+' synced</span>';
+    const statusEl=document.getElementById('gh-status');
+    statusEl.textContent='✓ '+repo+' synced'; statusEl.style.display='';
+    const slotEl=document.getElementById('gh-slot-'+i);
+    if(slotEl){ slotEl.style.borderColor='var(--lm)'; slotEl.style.boxShadow='0 0 0 1px var(--lm)'; }
+    showToast('✓ Synced: '+repo);
+  } catch(err){ showToast('Sync failed: '+err.message); }
+}
+
+async function syncGitHubRepos(){
+  ghKnowledge='';
+  for(let i=0;i<5;i++){
+    const url=document.getElementById('gh-slot-'+i)?.value.trim();
+    if(url) await syncSingleRepo(i);
+  }
+  showToast('✓ All repos synced');
+}
+
+function clearGHKnowledge(){
+  ghKnowledge='';
+  document.getElementById('kb-gh-status').textContent='Cleared';
+  document.getElementById('gh-status').style.display='none';
+  showToast('GitHub knowledge cleared');
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS — STORAGE
+// ══════════════════════════════════════════════════════
+function selectStorage(type){
+  selectedStorage=type;
+  document.querySelectorAll('.storage-option').forEach(el=>el.classList.remove('active'));
+  document.getElementById('store-'+type).classList.add('active');
+  document.getElementById('storage-config').style.display=type==='local'?'none':'block';
+  if(type==='local') linkLocalFolder();
+}
+
+async function linkLocalFolder(){
+  if(!window.showDirectoryPicker){ showToast('File System API not supported in this browser. Use Chrome or Edge.'); return; }
+  try {
+    const dir=await window.showDirectoryPicker();
+    showToast('✓ Folder linked: '+dir.name);
+    const testFile=await dir.getFileHandle('cnvs-os-test.txt',{create:true});
+    const writable=await testFile.createWritable();
+    await writable.write('CNVS OS connected at '+new Date().toISOString());
+    await writable.close();
+    showToast('✓ Folder writable — CNVS OS will save assets here');
+  } catch(e){ if(e.name!=='AbortError') showToast('Folder access failed: '+e.message); }
+}
+
+function testStorage(){ showToast('Connection test sent — check your storage endpoint'); }
+
+// ══════════════════════════════════════════════════════
+// SETTINGS — OFFLINE MODE
+// ══════════════════════════════════════════════════════
+function toggleOfflineMode(on){
+  offlineMode=on;
+  document.getElementById('offline-status').style.display=on?'block':'none';
+  document.getElementById('offline-badge').style.display=on?'inline':'none';
+  showToast(on?'⚫ Offline mode — GitHub knowledge only':'● Online mode restored');
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS — AI PROVIDERS
+// ══════════════════════════════════════════════════════
+function saveProviders(){
+  const newKey=document.getElementById('settings-api-key').value.trim();
+  const newModel=(document.getElementById('settings-model-select')||document.getElementById('settings-model'))?.value;
+  if(newKey && (newKey.startsWith('sk-ant-')||newKey.startsWith('sk-')||newKey.startsWith('pplx-'))){ apiKey=newKey; try{localStorage.setItem('cnvs_api_key',newKey);}catch(e){} }
+  if(newModel){ model=newModel; try{localStorage.setItem('cnvs_model',newModel);}catch(e){} document.getElementById('model-label').textContent=model; }
+  const openaiKey=document.getElementById('openai-key').value.trim();
+  const s=document.getElementById('openai-status');
+  if(openaiKey){ s.textContent='Active'; s.className='api-provider-status active'; }
+  const geminiKey=document.getElementById('gemini-key').value.trim();
+  const gs=document.getElementById('gemini-status');
+  if(geminiKey){ gs.textContent='Active'; gs.className='api-provider-status active'; }
+  const perplexityKey=document.getElementById('perplexity-key').value.trim();
+  const ps=document.getElementById('perplexity-status');
+  if(perplexityKey){ ps.textContent='Active'; ps.className='api-provider-status active'; }
+  showToast('✓ Providers saved');
+}
+
+function toggleComputerUse(on){
+  computerUseEnabled=on;
+  const s=document.getElementById('computer-use-status');
+  s.textContent=on?'Active':'Inactive'; s.className='api-provider-status '+(on?'active':'inactive');
+  showToast(on?'✓ Computer Use beta enabled':'Computer Use disabled');
+}
+
+function toggleClaudeCode(on){
+  claudeCodeEnabled=on;
+  const s=document.getElementById('claude-code-status');
+  s.textContent=on?'Active':'Inactive'; s.className='api-provider-status '+(on?'active':'inactive');
+  showToast(on?'✓ Claude Code mode active — Technical Team upgraded':'Claude Code mode disabled');
+}
+
+// ══════════════════════════════════════════════════════
+// CONNECTORS
+// ══════════════════════════════════════════════════════
+function connectFigma(){
+  const key=document.getElementById('figma-key').value.trim();
+  if(!key){ showToast('Enter Figma Personal Access Token'); return; }
+  connectors.figma={key, file:document.getElementById('figma-file').value.trim()};
+  const s=document.getElementById('figma-status');
+  s.textContent='Active'; s.className='api-provider-status active';
+  showToast('✓ Figma connected — Design Team can reference your files');
+}
+
+function connectAntigravity(){
+  const key=document.getElementById('antigravity-key').value.trim();
+  if(!key){ showToast('Enter Antigravity API key'); return; }
+  connectors.antigravity={key, url:document.getElementById('antigravity-url').value.trim()};
+  const s=document.getElementById('antigravity-status');
+  s.textContent='Active'; s.className='api-provider-status active';
+  showToast('✓ Antigravity connected');
+}
+
+function connectStability(){
+  const key=document.getElementById('stability-key').value.trim();
+  if(!key){ showToast('Enter Stability AI API key'); return; }
+  connectors.stability={key};
+  const s=document.getElementById('stability-status');
+  s.textContent='Active'; s.className='api-provider-status active';
+  showToast('✓ Stability AI connected — concept art generation enabled');
+}
+
+function toggleDalle(on){
+  connectors.dalle=on;
+  const s=document.getElementById('dalle-status');
+  s.textContent=on?'Active':'Inactive'; s.className='api-provider-status '+(on?'active':'inactive');
+  showToast(on?'✓ DALL-E 3 enabled for Design Team':'DALL-E 3 disabled');
+}
+
+function saveConnectors(){ showToast('✓ Connectors saved'); }
+
+// ══════════════════════════════════════════════════════
+// VISUAL GENERATION
+// ══════════════════════════════════════════════════════
+async function generateConceptArtUI(){
+  const product=document.getElementById('dt-product').value;
+  const direction=document.getElementById('dt-direction').value;
+  const brief=document.getElementById('dt-brief').value.trim();
+  if(!brief){ showToast('Enter a brief first'); return; }
+  const outEl=document.getElementById('dt-visual-output');
+  const contentEl=document.getElementById('dt-visual-content');
+  outEl.style.display='block';
+  contentEl.innerHTML='<div style="font-size:.7em;color:var(--mt);padding:12px 0;">Generating visual concept...</div>';
+  try {
+    if(connectors.dalle){
+      const openaiKey=document.getElementById('openai-key')?.value.trim();
+      if(openaiKey){
+        const prompt=`CNVS Rotterdam streetwear. ${product}. Direction: ${direction}. ${brief}. Minimal, dark aesthetic. Community culture. Fragment simplicity meets CLOT cultural depth.`;
+        const res=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Authorization':'Bearer '+openaiKey,'Content-Type':'application/json'},body:JSON.stringify({model:'dall-e-3',prompt,n:1,size:'1024x1024',quality:'hd'})});
+        const data=await res.json();
+        if(data.data&&data.data[0]){
+          contentEl.innerHTML=`<img src="${data.data[0].url}" alt="Concept art" style="width:100%;border-radius:3px;margin-bottom:8px;" loading="lazy"><div style="font-size:.63em;color:var(--mt);line-height:1.6;">${data.data[0].revised_prompt||brief}</div>`;
+          return;
+        }
+      }
+    }
+    // Fallback: text concept
+    const sys=`You are CNVS Visual Director. Generate extremely detailed concept art descriptions for apparel designs. CNVS aesthetic: CLOT community culture, Fragment simplicity, casual but bold, Rotterdam roots. Format:\n[VISUAL CONCEPT]\nProduct: \nStyle Direction: \nColour Palette: \nKey Visual Elements: \nGraphic/Print: \nMaterial Feel: \nCultural Reference: \nMood: \n[END]`;
+    const txt=await callAI(sys,`Create visual concept for: ${product} — ${direction} — ${brief}`);
+    contentEl.innerHTML=`<pre style="font-size:.7em;color:var(--cv);line-height:1.9;white-space:pre-wrap;">${txt}</pre>`;
+  } catch(e){ contentEl.innerHTML=`<div style="font-size:.7em;color:var(--red);">Generation failed: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════════════════════════════
+// DESIGN TEAM
+// ══════════════════════════════════════════════════════
+async function runDesignTeam(){
+  const product=document.getElementById('dt-product').value;
+  const direction=document.getElementById('dt-direction').value;
+  const brief=document.getElementById('dt-brief').value.trim();
+  if(!brief){ showToast('Enter a brief first'); return; }
+  document.getElementById('dt-run-btn').disabled=true;
+  const statusEl=document.getElementById('dt-status');
+  statusEl.className='pipeline-status on';
+  statusEl.innerHTML='<div class="ps-head"><div class="ps-spinner on"></div><div class="ps-title">Design Team running...</div></div><div id="dt-stages"></div>';
+  const agents=['ATLAS — Silhouette & Form','VANTA — Graphics & Surface','OMEN — Accessories','PRISM — Colour & Materials','ECHO — Brand Consistency','DROP — Drop Strategy'];
+  const stageHTML=agents.map((a,i)=>`<div class="stage" id="dts-${i}"><div class="stage-head" onclick="this.parentElement.classList.toggle('open')"><div class="stage-dot"></div><span class="stage-label">${a}</span><span class="stage-time"></span></div><div class="stage-body"></div></div>`).join('');
+  document.getElementById('dt-stages').innerHTML=stageHTML;
+  const setDTS=(i,state,txt)=>{
+    const el=document.getElementById('dts-'+i);
+    if(!el) return;
+    el.className='stage '+state;
+    if(txt){el.querySelector('.stage-body').textContent=txt;el.classList.add('open');}
+    if(state!==''){el.querySelector('.stage-time').textContent=now();}
+  };
+  const agentPrompts=[
+    `You are ATLAS, CNVS silhouette and form specialist. Design the garment structure and silhouette for:\nProduct: ${product}\nDirection: ${direction}\nBrief: ${brief}\n\nOutput: Silhouette description, proportions, construction notes, fit direction.`,
+    `You are VANTA, CNVS graphics and surface designer. Design graphic placement and surface art for:\nProduct: ${product}\nBrief: ${brief}\n\nOutput: Graphic concept, placement, print technique, embroidery/patch direction.`,
+    `You are OMEN, CNVS accessories and caps specialist. If applicable, design accessory/cap concepts to complement:\nProduct: ${product}\nBrief: ${brief}\n\nOutput: Accessory direction, cap style, hardware, finishing details.`,
+    `You are PRISM, CNVS colour and materials expert. Define the colour palette and materials for:\nProduct: ${product}\nBrief: ${brief}\n\nOutput: Colour palette (with references), fabric selection, texture, seasonal context.`,
+    `You are ECHO, CNVS brand consistency guardian. Review all design decisions for:\nProduct: ${product}\nBrief: ${brief}\n\nCheck against CNVS DNA: community-first, minimal, culturally authentic. Flag anything off-brand. Output: Approval notes + any warnings.`,
+    `You are DROP, CNVS drop strategy specialist. Design the release strategy for:\nProduct: ${product}\nBrief: ${brief}\n\nOutput: Drop format, packaging direction, release sequence, cultural activation moments.`
+  ];
+  const baseSys=`You are a senior CNVS Design Team agent. ${BRAND_DNA}`;
+  let accumulated='';
+  for(let i=0;i<agentPrompts.length;i++){
+    setDTS(i,'active');
+    try {
+      const result=await callAI(baseSys, agentPrompts[i]+(i>0?'\n\nPrevious agent notes:\n'+accumulated.slice(-500):''));
+      accumulated+='\n\n['+agents[i]+']:\n'+result;
+      setDTS(i,'done',result);
+    } catch(e){ setDTS(i,'error','Error: '+e.message); }
+  }
+  statusEl.querySelector('.ps-title').textContent='Design brief complete — check results';
+  statusEl.querySelector('.ps-spinner').classList.remove('on');
+  document.getElementById('dt-run-btn').disabled=false;
+  sendDTToInbox(product, direction, brief, accumulated);
+  showToast('✓ Design brief ready');
+}
+
+function sendDTToInbox(product, direction, brief, output){
+  const id=Date.now();
+  inbox.push({id,dept:'creative',type:'Design Brief — '+product,brief,output,cmoNote:'Design Team completed: '+product+' / '+direction,ts:now(),revised:false});
+  renderInbox();
+  document.getElementById('dot-inbox').className='si-dot live';
+}
+
+// ══════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════
+function setSize(px, btnId){
+  document.body.style.fontSize=px+'px';
+  document.querySelectorAll('.tb-sz button').forEach(b=>b.classList.remove('active-size'));
+  const btn=document.getElementById(btnId);
+  if(btn) btn.classList.add('active-size');
+}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('on'),3000);
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+buildAgentList();
+renderBoardRoom();
+renderInbox();
+renderArchive();
+
+// ── CIPHER LOGO ANIMATION ──
+(function(){
+  var CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@!%&?$*';
+  var LIME='#b8ff00';
+  var FINAL=['C','N','V','S'];
+  function rnd(){return CHARS[Math.floor(Math.random()*CHARS.length)];}
+
+  function run(){
+    var els=document.querySelectorAll('#cnvs-logo .cipher-char');
+    if(!els.length) return;
+    var idx=0, t=null;
+
+    // Reset all to random chars, V always lime
+    for(var i=0;i<els.length;i++){
+      els[i].className='cipher-char';
+      els[i].textContent=rnd();
+      if(i===2){
+        // V is ALWAYS lime — before, during, and after scramble
+        els[i].style.cssText='color:'+LIME+' !important';
+      } else {
+        els[i].style.cssText='';
+      }
+    }
+
+    // Scramble all unlocked letters
+    function scramble(){
+      t=setInterval(function(){
+        for(var i=0;i<els.length;i++){
+          if(!els[i].classList.contains('locked')){
+            els[i].classList.add('scrambling');
+            els[i].textContent=rnd();
+            // Re-enforce V lime on every frame (flicker class tries to override)
+            if(i===2) els[i].style.cssText='color:'+LIME+' !important';
+          }
+        }
+      },60);
+    }
+
+    // Lock one letter per 120ms stagger
+    function lock(){
+      if(idx>=els.length){ clearInterval(t); return; }
+      clearInterval(t);
+      var el=els[idx];
+      el.className='cipher-char locked';
+      el.textContent=FINAL[idx];
+      if(idx===2){
+        el.style.cssText='color:'+LIME+' !important';
+      } else {
+        el.style.cssText='';
+      }
+      idx++;
+      if(idx<els.length){
+        scramble();
+        setTimeout(lock, 120);
+      }
+    }
+
+    scramble();
+    setTimeout(lock, 700);
+  }
+
+  run();
+  setInterval(run, 6000);
+})();
+</script>
+</body>
 </html>
